@@ -2,7 +2,7 @@
 
 Beautiful celebrations. Thoughtfully planned.
 
-Repository foundation for a single Next.js App Router application. Currently only a static brand page exists. Authentication, persistence, business APIs, and integrations are not implemented.
+Repository foundation for a single Next.js App Router application. The public homepage now follows the approved Stitch desktop design, with responsive layouts and labeled sample planning, invitation and RSVP previews. Authentication, persistence, business APIs, and integrations are not implemented.
 
 ## Setup
 
@@ -19,7 +19,7 @@ npm run dev
 
 Open http://localhost:3000. Stop the server with Ctrl+C.
 
-No .env.local file or external credentials are required. .env.example documents future server-only configuration as commented entries. Nothing connects to MongoDB or Resend, including at build time. Fonts use local system fallbacks.
+No .env.local file or external credentials are required. .env.example documents future server-only configuration as commented entries. Nothing connects to MongoDB or Resend, including at build time. Inter and Newsreader fonts and the Stitch imagery are bundled locally; builds and page loads do not need Google Fonts or Stitch access.
 
 ## Verification
 
@@ -41,7 +41,7 @@ Formatting excludes the existing reference documents and generated files. No aut
 
 ## Structure and conventions
 
-- src/app: root layout, static page, and global palette/typography.
+- src/app: root layout, responsive public homepage, local fonts, and global palette/typography.
 - docs/references: existing Markdown product and technical specifications, preserved as supplied. The four same-named PDFs requested during planning were absent.
 - docs/implementation-plan.md: completed scope, next milestones, and deferred decisions.
 - AGENTS.md: concise repository guidance.
@@ -59,3 +59,9 @@ One provisioned shared couple account owns one wedding; no public registration. 
 WhatsApp sharing is manual; directions use Maps links; livestreams use YouTube. Photos stay in OneDrive, with JPEG requested as text. Hide website photo access at midnight Asia/Kolkata on weddingDate plus seven calendar days. The couple manually revokes sharing/deletes files; hiding the button cannot revoke a copied link. No application upload or photo collection is planned.
 
 English, INR and Asia/Kolkata are the product defaults. No service has been provisioned or deployment performed.
+
+## Homepage milestone
+
+The homepage contains the hero, sample ceremony/task/spending overview, family invitation and RSVP examples, external-feature previews, and a closing couple-access section. Planning and guest navigation scroll to page sections; the login area clearly states that sign-in is coming soon. Sample panels are read-only and do not save data. No external service or business API is invoked.
+
+Design source: Stitch project 17821977374160587101, Desktop Home Page screen 8f547d0292f848f6bdd500335bba32e5. See public/images/README.md for asset provenance and src/app/fonts for font licenses. No new dependencies were added.

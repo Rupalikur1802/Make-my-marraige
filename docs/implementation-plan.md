@@ -46,3 +46,18 @@ Confirmed user decisions override older references. Existing Markdown files supp
 - Build root is explicitly the repository root. Automatic Next.js agent-rule rewrites are disabled to preserve concise repository guidance.
 - No product tests or visual browser inspection were performed; this static milestone uses compile/static checks and HTTP content smoke checks. No feature infrastructure is represented as complete.
 - No commit, push, external provisioning, production connection or deployment performed.
+
+## Public homepage milestone (26 October 2026)
+
+- Implemented the complete Stitch Desktop Home Page layout, with responsive desktop/mobile styling, local imagery and licensed self-hosted fonts.
+- Added sample planning, invitation and RSVP displays; samples are read-only and clearly labeled. Attendance is per event. Removed unsupported private-stream and photo-sync claims.
+- Section navigation, keyboard focus, skip link and reduced-motion handling included. Couple sign-in is explicitly unavailable until the access milestone.
+- No authentication, database, business APIs, external integrations, dependencies, commits or deployment added.
+- Next step: review the homepage with the user before authorizing another feature.
+
+### Homepage verification
+
+- Passed: npm run format:check, npm run lint, npm run typecheck, and npm run build after fixing narrow-screen hero tagline wrapping. The production build prerenders the homepage as static content.
+- Sandbox execution encountered Windows Access is denied while SWC canonicalized the OneDrive project path. Typecheck and production build subsequently passed with approved execution outside the sandbox.
+- An isolated verification copy also encountered Windows dependency-directory permissions. A temporary React SSR layout server was prepared, but browser/HTTP connectivity was unavailable; no successful visual or runtime verification is claimed.
+- Desktop and mobile visual browser inspection remains outstanding.
