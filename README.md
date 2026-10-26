@@ -44,6 +44,7 @@ Formatting excludes the existing reference documents and generated files. No aut
 - src/app: root layout, responsive public homepage, local fonts, and global palette/typography.
 - docs/references: existing Markdown product and technical specifications, preserved as supplied. The four same-named PDFs requested during planning were absent.
 - docs/implementation-plan.md: completed scope, next milestones, and deferred decisions.
+- docs/project-status.md: ongoing major-feature progress, verification, and remaining work.
 - AGENTS.md: concise repository guidance.
 
 TypeScript uses strict mode, unchecked-index checks, and @/* mapped to src/*. Use plain CSS initially. Approved Stitch designs will guide the actual interface.

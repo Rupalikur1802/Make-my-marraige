@@ -10,3 +10,4 @@
 - No public registration, application uploads/photo records, Graph, R2, vendor discovery, automated WhatsApp, queues, or bulk email. OneDrive access and cleanup remain external.
 - Approved Stitch designs guide future UI. Preserve the restrained ivory/charcoal/olive direction; do not invent the full product interface.
 - See docs/implementation-plan.md for completion boundaries and deferred decisions.
+- Maintain docs/project-status.md as the ongoing progress record. Whenever a major feature or milestone is implemented or materially updated, update this file in the same change with its status, delivered scope, verification results, and remaining work. Record only confirmed progress; distinguish implemented work from pending review or verification. Keep architecture, scope boundaries, and deferred decisions in docs/implementation-plan.md and link to them rather than duplicating them.
