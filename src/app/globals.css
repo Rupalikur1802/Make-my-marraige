@@ -1,0 +1,46 @@
+:root {
+  --ivory: #f7f5ef;
+  --charcoal: #252924;
+  --olive: #465344;
+  --stone: #e8e5dd;
+  --bronze: #a28c69;
+  background: var(--ivory);
+  color: var(--charcoal);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  min-height: 100svh;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 8vw, 8rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.brand {
+  margin: 0 0 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--bronze);
+  color: var(--olive);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1.15;
+}
