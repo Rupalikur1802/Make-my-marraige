@@ -7,7 +7,7 @@
 - Foundation must render/build without credentials or external connections. Never substitute fake authentication or in-memory persistence for real infrastructure.
 - When integrations are authorized, keep database, email, cryptography and secrets server-only; use Node.js runtime and lazy configuration/connection checks. Never expose secrets through NEXT_PUBLIC_.
 - Wedding is the tenant boundary. Derive ownership from the authenticated actor. Guest access is limited to the owning family and assigned published events. Return explicit safe DTOs.
-- No public registration, application uploads/photo records, Graph, R2, vendor discovery, automated WhatsApp, queues, or bulk email. OneDrive access and cleanup remain external.
+- Public couple signup is authorized (27 October 2026); see docs/implementation-plan.md. No application uploads/photo records, Graph, R2, vendor discovery, automated WhatsApp, queues, or bulk email. OneDrive access and cleanup remain external.
 - Approved Stitch designs guide future UI. Preserve the restrained ivory/charcoal/olive direction; do not invent the full product interface.
 - See docs/implementation-plan.md for completion boundaries and deferred decisions.
 - Maintain docs/project-status.md as the ongoing progress record. Whenever a major feature or milestone is implemented or materially updated, update this file in the same change with its status, delivered scope, verification results, and remaining work. Record only confirmed progress; distinguish implemented work from pending review or verification. Keep architecture, scope boundaries, and deferred decisions in docs/implementation-plan.md and link to them rather than duplicating them.

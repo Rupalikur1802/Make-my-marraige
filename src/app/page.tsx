@@ -1,4 +1,5 @@
 import Image from "next/image";
+import styles from "./home.module.css";
 import type { ReactNode } from "react";
 
 const ceremonies = [
@@ -120,7 +121,6 @@ function Icon({ name }: { name: IconName }) {
 function Brand() {
   return (
     <a className="brand" href="#top" aria-label="Make My Marriage home">
-      <Image src="/images/brand-emblem.png" alt="" width={36} height={36} />
       <span>Make My Marriage</span>
     </a>
   );
@@ -130,7 +130,7 @@ function Navigation() {
     <>
       <a href="#planning">Planning</a>
       <a href="#guest-experience">Guest experience</a>
-      <a href="#couple-login">Couple login</a>
+      <a href="/login">Couple login</a>
     </>
   );
 }
@@ -153,7 +153,7 @@ function SectionHeading({
 }
 export default function HomePage() {
   return (
-    <>
+    <div className={styles.home}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -185,7 +185,7 @@ export default function HomePage() {
               <a className="button" href="#planning">
                 Explore the planner
               </a>
-              <a className="text-link" href="#couple-login">
+              <a className="text-link" href="/login">
                 Couple login <Icon name="arrow" />
               </a>
             </div>
@@ -200,8 +200,8 @@ export default function HomePage() {
           <div className="hero-visual">
             <Image
               className="hero-image"
-              src="/images/wedding-ceremony.jpg"
-              alt="An Indian couple taking part in a wedding ritual, with their hands joined above ceremonial offerings"
+              src="/images/home-ceremony.jpg"
+              alt="An Indian couple joining hands above ceremonial offerings during their wedding"
               width={1200}
               height={900}
               priority
@@ -209,38 +209,19 @@ export default function HomePage() {
             />
             <div className="snapshot surface">
               <div className="snapshot-heading">
-                <div>
-                  <p className="eyebrow">Timeline & status</p>
-                  <h2>Your wedding, at a glance</h2>
-                </div>
-                <span className="badge">Sample wedding</span>
+                <h2>Your wedding, at a glance</h2>
+                <span className="sample-label">Sample preview</span>
               </div>
               <div className="snapshot-row">
-                <span>
-                  <i className="dot bronze" />
-                  Sangeet Night
-                </span>
+                <span>Sangeet Night</span>
                 <span>9 December</span>
               </div>
               <div className="snapshot-row">
-                <span>
-                  <i className="dot" />
-                  Wedding Ceremony
-                </span>
+                <span>Wedding Ceremony</span>
                 <span>10 December</span>
               </div>
               <div className="snapshot-row snapshot-divider">
-                <span>
-                  <Icon name="calendar" />
-                  Ceremony timings
-                </span>
-                <span className="badge neutral">All in one place</span>
-              </div>
-              <div className="snapshot-row">
-                <span>
-                  <Icon name="check" />
-                  Wedding RSVPs
-                </span>
+                <span>Wedding RSVP</span>
                 <strong>124 attending</strong>
               </div>
             </div>
@@ -263,116 +244,84 @@ export default function HomePage() {
             </div>
             <div
               className="planner surface"
-              aria-label="Sample wedding planning preview"
+              aria-label="Illustrative wedding planning ledger"
             >
               <div className="planner-header">
-                <div className="couple-identity">
-                  <span className="monogram">A&P</span>
-                  <div>
-                    <div className="couple-name">
-                      <strong>Arjun & Priya</strong>
-                      <span className="small-label">
-                        Wedding date: 10 December 2026
-                      </span>
-                    </div>
-                    <p>Bengaluru & Coorg celebrations</p>
-                  </div>
+                <div className="ledger-couple">
+                  <h3>Arjun &amp; Priya</h3>
+                  <span>10 December 2026 · Bengaluru</span>
                 </div>
-                <span className="badge neutral">
-                  Sample wedding preview <i className="dot" />
-                </span>
+                <span className="sample-label">Sample preview ledger</span>
               </div>
               <div className="planner-grid">
                 <div>
-                  <div className="panel-heading">
-                    <h3>Upcoming ceremonies</h3>
-                    <span className="small-label">4 events · IST</span>
+                  <div className="ledger-heading">
+                    <h3>Ceremonial schedule</h3>
+                    <span>4 events · IST</span>
                   </div>
-                  <div className="ceremony-list">
+                  <div className="ledger-events">
                     {ceremonies.map((event) => (
                       <div
-                        className={`ceremony ${event.day === "10" ? "ceremony-highlight" : ""}`}
+                        className={
+                          "ledger-event " +
+                          (event.day === "10" ? "priority-event" : "")
+                        }
                         key={event.day}
                       >
-                        <div className="date-tile">
-                          <span>Dec</span>
-                          <strong>{event.day}</strong>
-                        </div>
+                        <span className="ledger-date">{event.day} Dec</span>
                         <div>
                           <h4>{event.name}</h4>
                           <p>{event.place}</p>
-                          <span className="event-note">{event.note}</span>
                         </div>
+                        <span className="sample-label">
+                          {event.day === "10"
+                            ? "Main ceremony"
+                            : "Sample event"}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="planning-sidebar">
-                  <div className="task-panel">
-                    <div className="panel-heading">
-                      <h3>Preparation tasks</h3>
-                      <span className="small-label">
-                        3 pending · 1 complete
-                      </span>
+                <div className="ledger-sidebar">
+                  <div>
+                    <div className="ledger-heading">
+                      <h3>Key tasks</h3>
+                      <span>3 pending · 1 complete</span>
                     </div>
-                    <ul className="task-list">
+                    <ul className="ledger-tasks">
                       <li>
-                        <span className="task-circle" />
-                        <div>
-                          Coordinate floral entry & umbrellas
-                          <small>Assigned to: Rohan</small>
-                        </div>
+                        <span>Coordinate dhol entry &amp; umbrellas</span>
+                        <span>Kabir</span>
                       </li>
                       <li>
-                        <span className="task-circle" />
-                        <div>
-                          Finalize mehendi artist arrival slot
-                          <small>Assigned to: Priya</small>
-                        </div>
+                        <span>Finalize bridal mehndi artist slot</span>
+                        <span>Priya</span>
                       </li>
                       <li>
-                        <span className="task-circle" />
-                        <div>
-                          Seating for elders in the front rows
-                          <small>Assigned to: Arjun</small>
-                        </div>
+                        <span>Seating layout for elders in mandap</span>
+                        <span>Arjun</span>
                       </li>
-                      <li className="task-complete">
-                        <Icon name="check" />
-                        <span>Confirm guest welcome hampers</span>
+                      <li className="done">
+                        <span>Confirm high-tea catering menu</span>
+                        <span>Done</span>
                       </li>
                     </ul>
                   </div>
-                  <div className="expense-panel">
-                    <div className="panel-heading">
-                      <div>
-                        <p className="eyebrow">Spending</p>
-                        <h3 className="expense-total">₹1,25,000</h3>
-                      </div>
-                      <span className="small-label">Recorded expenses</span>
+                  <div className="ledger-spending">
+                    <div className="ledger-heading">
+                      <h3>Spending total</h3>
+                      <strong>₹1,25,000</strong>
                     </div>
                     <p>
-                      Keep ceremony preparations and everyday details accounted
-                      for.
+                      Sample contributions recorded by Arjun (₹70,000) and Priya
+                      (₹55,000).
                     </p>
-                    <div className="spending-rule">
+                    <div
+                      className="spending-bar"
+                      aria-label="Arjun 56 percent, Priya 44 percent"
+                    >
                       <span />
-                    </div>
-                    <div className="payer-grid">
-                      <div>
-                        <span className="small-label">
-                          <i className="dot" /> Arjun
-                        </span>
-                        <strong>₹70,000</strong>
-                        <small>Venue deposit & guest lounge</small>
-                      </div>
-                      <div>
-                        <span className="small-label">
-                          <i className="dot bronze" /> Priya
-                        </span>
-                        <strong>₹55,000</strong>
-                        <small>Flowers, mandap & sweets</small>
-                      </div>
+                      <span />
                     </div>
                   </div>
                 </div>
@@ -385,7 +334,7 @@ export default function HomePage() {
                   Every ceremony in order
                 </h3>
                 <p>
-                  A single chronological schedule for your celebrations,
+                  A single chronological schedule across your celebrations,
                   locations, and timings.
                 </p>
               </div>
@@ -395,8 +344,8 @@ export default function HomePage() {
                   Responsibilities made clear
                 </h3>
                 <p>
-                  Keep tasks and the people responsible for them together, so
-                  nothing gets lost.
+                  Keep ceremony preparations and the people responsible for them
+                  together.
                 </p>
               </div>
               <div>
@@ -405,11 +354,81 @@ export default function HomePage() {
                   Know who spent what
                 </h3>
                 <p>
-                  A clear record of spending, grouped by person or event. A
-                  little less guesswork.
+                  Clear records of ceremonial and logistical expenses, grouped
+                  by person or event.
                 </p>
               </div>
             </div>
+            <section className="essentials" aria-labelledby="essentials-title">
+              <div className="essentials-heading">
+                <div>
+                  <p className="eyebrow">Ceremonial essentials</p>
+                  <h3 id="essentials-title">
+                    Thoughtful planning for traditional customs
+                  </h3>
+                </div>
+                <p>
+                  Illustrative ways to organize your events and tasks around the
+                  customs that matter to your families.
+                </p>
+              </div>
+              <div className="essentials-grid">
+                <article className="surface">
+                  <p className="eyebrow">Ceremony timing</p>
+                  <h4>Muhurtham &amp; Auspicious Timings</h4>
+                  <p>
+                    Keep the timings recommended by your priest alongside your
+                    ceremony schedule.
+                  </p>
+                  <div className="card-example">
+                    <p>
+                      <span>Sample muhurtham</span>
+                      <span>10:14–10:48 AM</span>
+                    </p>
+                    <p>
+                      <span>Priest briefing</span>
+                      <span>Sample task</span>
+                    </p>
+                  </div>
+                </article>
+                <article className="surface">
+                  <p className="eyebrow">Wardrobe</p>
+                  <h4>Attire &amp; Trousseau Preparations</h4>
+                  <p>
+                    Use preparation tasks for outfit trials, jewellery pairings,
+                    and family coordination.
+                  </p>
+                  <div className="card-example">
+                    <p>
+                      <span>Outfit fitting</span>
+                      <span>Sample task</span>
+                    </p>
+                    <p>
+                      <span>Safas &amp; dupattas</span>
+                      <span>To coordinate</span>
+                    </p>
+                  </div>
+                </article>
+                <article className="surface">
+                  <p className="eyebrow">Hospitality</p>
+                  <h4>Family &amp; Guest Coordination</h4>
+                  <p>
+                    Keep each family’s invited events and ceremony attendance
+                    easy to follow.
+                  </p>
+                  <div className="card-example">
+                    <p>
+                      <span>Sharma family</span>
+                      <span>5 invited</span>
+                    </p>
+                    <p>
+                      <span>Wedding ceremony</span>
+                      <span>4 attending</span>
+                    </p>
+                  </div>
+                </article>
+              </div>
+            </section>
           </div>
         </section>
         <section
@@ -429,73 +448,44 @@ export default function HomePage() {
           <div className="guest-grid">
             <div className="invitation surface">
               <div className="invitation-heading">
-                <div>
-                  <p className="eyebrow">Ceremonial invitation</p>
-                  <span className="small-muted">Sample family invitation</span>
-                </div>
-                <Icon name="mail" />
+                <span className="sample-label">Sample family invitation</span>
+                <span className="small-muted">Up to 5 guests</span>
               </div>
               <p className="eyebrow invitation-intro">Specially prepared for</p>
-              <h3>For the Sharma Family</h3>
-              <p className="couple-signature">Arjun & Priya</p>
+              <h3>The Sharma Family</h3>
+              <p className="couple-signature">Arjun &amp; Priya</p>
               <p className="invitation-message">
                 With the blessings of our elders, you’re invited to celebrate
-                with us as we begin this beautiful journey together.
+                with us as we begin this sacred journey of companionship.
               </p>
               <div className="invited-events">
-                <p className="small-label">Events for your family</p>
                 <div>
                   <span>Wedding Ceremony</span>
-                  <span>10 December 2026</span>
+                  <span>10 Dec 2026</span>
                 </div>
                 <div>
                   <span>Evening Reception</span>
-                  <span>11 December 2026</span>
+                  <span>11 Dec 2026</span>
                 </div>
-              </div>
-              <div className="invitation-footer">
-                <span className="small-label">
-                  Invited members: up to 5 guests
-                </span>
-                <span className="small-label accent">
-                  <Icon name="link" /> Family invitation
-                </span>
               </div>
             </div>
-            <div className="rsvp-column">
-              <div className="rsvp-panel">
-                <div className="panel-heading">
-                  <div>
-                    <p className="eyebrow">Sample RSVP</p>
-                    <h3>Confirm ceremony attendance</h3>
-                  </div>
-                  <span className="badge neutral">
-                    Sharma family · 5 guests
-                  </span>
+            <div>
+              <div className="attendance-preview">
+                <div className="ledger-heading">
+                  <h3>Confirm Attendance</h3>
+                  <span>Up to 5 guests</span>
                 </div>
-                <div className="rsvp-row">
-                  <div>
-                    <h4>Wedding Ceremony</h4>
-                    <p>Thursday, 10 Dec · 9:30 AM</p>
-                  </div>
-                  <span className="guest-count">
-                    4 guests <Icon name="check" />
-                  </span>
+                <div className="attendance-row">
+                  <span>Wedding Ceremony</span>
+                  <strong>4 guests attending</strong>
                 </div>
-                <div className="rsvp-row">
-                  <div>
-                    <h4>Evening Reception</h4>
-                    <p>Friday, 11 Dec · 7:30 PM</p>
-                  </div>
-                  <span className="guest-count">
-                    3 guests <Icon name="check" />
-                  </span>
+                <div className="attendance-row">
+                  <span>Evening Reception</span>
+                  <strong>3 guests attending</strong>
                 </div>
-                <div className="rsvp-footer">
+                <div className="attendance-footer">
                   <span>Illustrative response</span>
-                  <span className="response-status">
-                    <Icon name="check" /> Attending
-                  </span>
+                  <span className="preview-response">Read-only preview</span>
                 </div>
               </div>
               <div className="guest-benefits">
@@ -516,7 +506,7 @@ export default function HomePage() {
                 <div>
                   <Icon name="unlock" />
                   <div>
-                    <strong>No guest account</strong>
+                    <strong>RSVP without account</strong>
                     <p>No passwords or app downloads.</p>
                   </div>
                 </div>
@@ -535,74 +525,40 @@ export default function HomePage() {
                 title="The details that bring everyone together."
               />
             </div>
-            <div className="feature-grid">
-              <article className="feature-card surface">
-                <div className="feature-icon">
-                  <Icon name="pin" />
-                </div>
+            <div className="essentials-grid details-grid">
+              <article className="surface">
+                <p className="eyebrow">Navigation</p>
                 <h3>Find every venue</h3>
                 <p>
                   Keep event addresses and Google Maps directions close at hand.
                 </p>
-                <div className="feature-example">
-                  <p className="eyebrow">Sample location</p>
-                  <h4>The Tamarind Tree, Bengaluru</h4>
-                  <p>Courtyard Mandap · Wedding ceremony</p>
-                  <div className="example-footer">
-                    Directions, without the detour <Icon name="arrow" />
-                  </div>
+                <div className="detail-example">
+                  <strong>The Tamarind Tree, Bengaluru</strong>
+                  <span>Sample location · Courtyard Mandap</span>
                 </div>
               </article>
-              <article className="feature-card surface">
-                <div className="feature-icon">
-                  <Icon name="video" />
-                </div>
+              <article className="surface">
+                <p className="eyebrow">Broadcast</p>
                 <h3>Join from wherever you are</h3>
                 <p>
                   Share a YouTube livestream so loved ones can watch the
                   celebration.
                 </p>
-                <div
-                  className="video-example"
-                  aria-label="Illustrative livestream preview, not a playable video"
-                >
-                  <div className="video-still">
-                    <span className="play-symbol" aria-hidden="true">
-                      ▶
-                    </span>
-                    <span className="small-label">
-                      YouTube livestream preview
-                    </span>
-                  </div>
-                  <div className="video-caption">
-                    <span>Arjun & Priya’s ceremony</span>
-                    <span>9:30 AM IST</span>
-                  </div>
+                <div className="detail-example">
+                  <strong>Arjun &amp; Priya’s ceremony</strong>
+                  <span>Sample livestream · 9:30 AM IST</span>
                 </div>
               </article>
-              <article className="feature-card surface">
-                <div className="feature-icon">
-                  <Icon name="photos" />
-                </div>
-                <h3>Keep the memories together</h3>
+              <article className="surface">
+                <p className="eyebrow">Memories</p>
+                <h3>Keep memories together</h3>
                 <p>
                   Give guests one shared OneDrive folder to view and add wedding
                   photos.
                 </p>
-                <div className="feature-example">
-                  <div className="album-heading">
-                    <Icon name="photos" />
-                    <div>
-                      <h4>Arjun & Priya’s wedding album</h4>
-                      <p>Shared OneDrive folder</p>
-                    </div>
-                  </div>
-                  <p className="photo-instruction">
-                    Please upload wedding photos in JPEG format.
-                  </p>
-                  <p className="small-muted">
-                    Folder access and uploads are managed in OneDrive.
-                  </p>
+                <div className="detail-example">
+                  <strong>Arjun &amp; Priya’s wedding album</strong>
+                  <span>Sample folder · Access managed in OneDrive</span>
                 </div>
               </article>
             </div>
@@ -621,16 +577,9 @@ export default function HomePage() {
               moments that matter.
             </h2>
             <p>A thoughtful space for the planning behind your celebration.</p>
-            <button
-              className="button"
-              disabled
-              aria-describedby="login-availability"
-            >
+            <a className="button" href="/login">
               Couple login
-            </button>
-            <p id="login-availability" className="small-muted">
-              Couple sign-in is coming soon.
-            </p>
+            </a>
             <a className="back-to-top" href="#top">
               ↑ Back to top
             </a>
@@ -648,6 +597,6 @@ export default function HomePage() {
           </nav>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

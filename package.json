@@ -7,18 +7,27 @@
   },
   "packageManager": "npm@10.9.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:auth": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/auth.test.ts",
+    "db:indexes": "node --conditions=react-server --import tsx scripts/operator.ts indexes",
+    "account:provision": "node --conditions=react-server --import tsx scripts/operator.ts provision",
+    "test:auth:unit": "node --conditions=react-server --import tsx --test tests/auth-unit.test.ts",
+    "test:auth:http": "node --conditions=react-server --import tsx --test tests/auth-http.test.ts"
   },
   "dependencies": {
+    "@node-rs/argon2": "2.2.2",
+    "mongoose": "9.11.4",
     "next": "16.4.3",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
@@ -26,7 +35,9 @@
     "@types/react-dom": "19.3.0",
     "eslint": "10.13.0",
     "eslint-config-next": "16.4.3",
+    "mongodb-memory-server-core": "11.3.0",
     "prettier": "3.9.10",
+    "tsx": "4.23.15",
     "typescript": "5.9.3"
   }
 }

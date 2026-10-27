@@ -9,3 +9,4 @@ test-results/
 *.tsbuildinfo
 .env*
 !.env.example
+.cache/
