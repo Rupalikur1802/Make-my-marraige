@@ -18,7 +18,8 @@
     "db:indexes": "node --conditions=react-server --import tsx scripts/operator.ts indexes",
     "account:provision": "node --conditions=react-server --import tsx scripts/operator.ts provision",
     "test:auth:unit": "node --conditions=react-server --import tsx --test tests/auth-unit.test.ts",
-    "test:auth:http": "node --conditions=react-server --import tsx --test tests/auth-http.test.ts"
+    "test:auth:http": "node --conditions=react-server --import tsx --test tests/auth-http.test.ts",
+    "test:wedding": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/wedding.test.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.2",

@@ -69,7 +69,7 @@ async function main() {
   if (operation === "indexes") {
     await ensureAuthIndexes();
     console.log(
-      "Authentication indexes ensured without dropping indexes or data.",
+      "Application indexes ensured without dropping indexes or data.",
     );
     return;
   }

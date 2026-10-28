@@ -166,6 +166,67 @@ test(
         headers: { Cookie: cookie },
       });
       assert.equal(session.status, 200);
+      const setupPage = await fetch(origin + "/wedding/setup", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(setupPage.status, 200);
+      assert.equal(setupPage.headers.get("referrer-policy"), "no-referrer");
+      assert.match(setupPage.headers.get("cache-control")!, /no-store/);
+      assert.match(await setupPage.text(), /Let’s start with your celebration/);
+      const weddingBefore = await fetch(origin + "/api/wedding", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(weddingBefore.status, 200);
+      assert.equal((await weddingBefore.json()).data.setupStatus, "draft");
+      const patchWedding = (body: unknown) =>
+        fetch(origin + "/api/wedding", {
+          method: "PATCH",
+          headers: {
+            Cookie: cookie,
+            Origin: origin,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+      const draft = await patchWedding({
+        expectedVersion: 0,
+        groomName: "Arjun",
+        brideName: "Priya",
+      });
+      assert.equal(draft.status, 200);
+      const resumed = await fetch(origin + "/wedding/setup", {
+        headers: { Cookie: cookie },
+      });
+      assert.match(await resumed.text(), /value="Arjun"/);
+      const completed = await patchWedding({
+        expectedVersion: 1,
+        setupStatus: "complete",
+        weddingDate: "2026-12-10",
+        venue: "Test-only wedding hall",
+      });
+      assert.equal(completed.status, 200);
+      const overview = await fetch(origin + "/workspace", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(overview.status, 200);
+      const overviewHtml = await overview.text();
+      assert.match(overviewHtml, /Your celebration starts here/);
+      assert.match(overviewHtml, /Test-only wedding hall/);
+      assert.match(overviewHtml, /6<!-- --> draft ceremonies/);
+      const stale = await patchWedding({
+        expectedVersion: 1,
+        venue: "Stale overwrite",
+      });
+      assert.equal(stale.status, 409);
+      const edited = await patchWedding({
+        expectedVersion: 2,
+        venue: "Updated wedding hall",
+      });
+      assert.equal(edited.status, 200);
+      const refreshed = await fetch(origin + "/workspace", {
+        headers: { Cookie: cookie },
+      });
+      assert.match(await refreshed.text(), /Updated wedding hall/);
       const signout = await fetch(origin + "/api/auth/logout", {
         method: "POST",
         headers: { Origin: origin, Cookie: cookie },

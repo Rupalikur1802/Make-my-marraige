@@ -6,7 +6,7 @@ import {
   type Model,
 } from "mongoose";
 
-// Only the ownership shell needed by login. Setup fields arrive with wedding setup.
+// Wedding ownership and the authorized setup fields.
 const weddingSchema = new Schema(
   {
     ownerAccountId: { type: Schema.Types.ObjectId, required: true },
@@ -16,6 +16,12 @@ const weddingSchema = new Schema(
       required: true,
       default: "draft",
     },
+    groomName: { type: String, trim: true, maxlength: 100 },
+    brideName: { type: String, trim: true, maxlength: 100 },
+    weddingDate: { type: String },
+    venue: { type: String, trim: true, maxlength: 500 },
+    photoVisibleUntil: { type: Date },
+    presetsSeededAt: { type: Date },
     timezone: {
       type: String,
       enum: ["Asia/Kolkata"],
@@ -39,7 +45,7 @@ const weddingSchema = new Schema(
   },
 );
 weddingSchema.index({ ownerAccountId: 1 }, { unique: true });
-type WeddingRecord = InferSchemaType<typeof weddingSchema>;
+export type WeddingRecord = InferSchemaType<typeof weddingSchema>;
 export function weddingModel(connection: Connection): Model<WeddingRecord> {
   return (
     (connection.models.Wedding as

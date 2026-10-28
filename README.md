@@ -2,7 +2,7 @@
 
 Beautiful celebrations. Thoughtfully planned.
 
-Repository foundation for a single Next.js App Router application. The public homepage now follows the approved Stitch desktop design, with responsive layouts and labeled sample planning, invitation and RSVP previews. Couple login, persistent sessions, logout, and a protected welcome page are implemented. Wedding planning features and external integrations remain deferred.
+Repository foundation for a single Next.js App Router application. The public homepage now follows the approved Stitch desktop design, with responsive layouts and labeled sample planning, invitation and RSVP previews. Couple login, persistent sessions, logout, and a protected welcome page are implemented. Wedding setup with saved drafts, a completed overview and six draft ceremonies is implemented. Ceremony editing, other planning features and external integrations remain deferred.
 
 ## Setup
 
@@ -116,3 +116,34 @@ Open /login and choose **Create a couple account**, or open /signup. Use an emai
 Development setup still requires ignored .env.local configuration and `npm run db:indexes`. Run `npm run dev` to start locally. Operator account provisioning is optional.
 
 The homepage was refreshed on 27 October 2026 from Stitch Refined Background Palette screen 412de8e8b2254709a5cef3f731adc5b9. Homepage styles are scoped in src/app/home.module.css. Planning, ceremonial essentials and attendance examples are read-only illustrations; they do not provision or implement future planning features.
+
+## Wedding setup
+
+After signing in, incomplete weddings open /wedding/setup. Save a partial draft and resume later, or enter both names, a wedding date and venue to complete setup. /workspace then shows the saved details and six draft ceremonies. **Edit wedding details** reopens the form. A stale edit returns a conflict; load the latest saved details before retrying. Unsaved form entries are retained only in the open page, not browser storage.
+
+Run the non-destructive index command once after updating this feature:
+
+```powershell
+npm run db:indexes
+npm run dev
+```
+
+The index command is limited to explicitly configured mmm_dev/mmm_test databases and now includes the partial unique ceremony-preset index. It never drops indexes or records. The existing development MongoDB deployment must support transactions (Atlas or a replica set).
+
+Verification:
+
+```powershell
+npm run format:check
+npm run lint
+npm run typecheck
+npm run build
+npm run test:wedding
+npm run test:auth
+npm run test:auth:http
+```
+
+The HTTP suite requires the production build and now covers draft resume, completion, overview, stale edits and saved updates as well as authentication. Automated database tests create disposable local MongoDB replica sets and never load .env.local. First use may download the MongoDB binary.
+
+Maps/OneDrive settings, ceremony editing/publication, invitations and full dashboard features remain deferred. Completing setup does not publish anything or contact guests.
+
+Restart an existing development server after this model update so cached Mongoose models are reloaded before testing setup.

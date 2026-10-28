@@ -4,7 +4,13 @@ const nextConfig = {
   agentRules: false,
   serverExternalPackages: ["@node-rs/argon2", "mongoose"],
   async headers() {
-    return ["/login", "/workspace", "/api/auth/:path*"].map((source) => ({
+    return [
+      "/login",
+      "/workspace",
+      "/wedding/:path*",
+      "/api/wedding",
+      "/api/auth/:path*",
+    ].map((source) => ({
       source,
       headers: [
         { key: "Cache-Control", value: "private, no-store" },

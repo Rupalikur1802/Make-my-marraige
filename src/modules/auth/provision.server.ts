@@ -1,4 +1,5 @@
 import "server-only";
+import { eventModel } from "@/modules/events/model.server";
 import { Types } from "mongoose";
 import { connectDatabase } from "@/lib/db.server";
 import { authModels } from "./models.server";
@@ -11,7 +12,13 @@ export async function ensureAuthIndexes() {
   const connection = await connectDatabase();
   const { Account, Session, RateLimit } = authModels(connection);
   const Wedding = weddingModel(connection);
-  for (const model of [Account, Wedding, Session, RateLimit])
+  for (const model of [
+    Account,
+    Wedding,
+    Session,
+    RateLimit,
+    eventModel(connection),
+  ])
     await model.createIndexes();
 }
 export async function provisionCouple(email: string, password: string) {

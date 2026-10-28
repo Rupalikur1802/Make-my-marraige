@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 27 October 2026
+Last updated: 28 October 2026
 
 This is the ongoing record of major features and milestones delivered in Make My Marriage. Update it whenever a major feature is built or materially changed, including its status, delivered scope, verification, and remaining work. Only mark confirmed work complete; record pending review and verification explicitly.
 
@@ -15,10 +15,19 @@ See [implementation plan](implementation-plan.md) for authorized milestone bound
 | Couple login, sessions, and logout         | Implemented; user review completed | Node.js 24 and Vercel packaging verification.             |
 | Public couple signup                       | Implemented; user review completed | Email verification and password recovery are deferred.    |
 | Login design refresh                       | Implemented; user review completed | Explicit mobile viewport verification remains unrecorded. |
+| Wedding setup and ceremony seeding         | Implemented; user review completed | Explicit mobile viewport and Node.js 24 verification.     |
 
-Couple signup, authentication, supporting persistence, and signup/login/session/logout APIs are implemented. Development database connection and index setup are verified. The user confirmed completion of code review and page-flow checks on 27 October 2026. Planning features, guest authentication and external integrations remain deferred; future milestones require user authorization.
+Couple signup, authentication, supporting persistence, and signup/login/session/logout APIs are implemented. Development database connection and index setup are verified. The user confirmed completion of code review and page-flow checks on 27 October 2026. Wedding setup and six draft ceremony seeds are implemented. Ceremony editing, other planning features, guest authentication and external integrations remain deferred; future milestones require user authorization.
 
-## Latest review checkpoint (27 October 2026)
+## Latest review checkpoint (28 October 2026)
+
+- The user confirmed that the wedding setup feature looks good and approved committing and pushing the milestone to GitHub.
+- Wedding setup, saved overview/editing, and six private draft ceremony seeds are accepted for this milestone. Delivered scope and automated verification are recorded in the wedding setup section below.
+- Pre-commit verification repeated on 28 October 2026: formatting, lint, typecheck, ordinary production build, eight wedding setup tests, ten authentication integration tests, six security/unit tests and the expanded built-app HTTP regression all passed. Database tests used disposable local data.
+- Explicit desktop/mobile viewport coverage and Node.js 24/Vercel release verification remain unrecorded. General user acceptance does not establish those checks.
+- Next feature: agree and authorize its scope in the [implementation plan](implementation-plan.md) before implementation. No additional feature or deployment is authorized by this checkpoint.
+
+## Previous review checkpoint (27 October 2026)
 
 - The user confirmed that code review and page-flow checks have been completed. This supersedes earlier pending user-review notes below, which describe the state at delivery.
 - The implemented flow is homepage → login or signup → sign-in → protected workspace → sign-out. Signup creates the couple account and wedding shell, then directs the couple to sign in; the workspace remains a welcome page with wedding setup deferred.
@@ -96,3 +105,13 @@ Login refresh verification: format:check, lint, typecheck and production build p
 Implemented; automated checks and desktop browser inspection passed; mobile visual review pending. Fetched Stitch Refined Background Palette and refreshed the homepage palette, navigation, planning ledger, ceremonial essentials examples, family invitation/attendance previews, detail cards and closing panel. Existing authentication links remain connected. See implementation-plan.md for the scope boundary and adaptations of unsupported prototype claims.
 
 Homepage refresh verification: format:check, lint, typecheck, build and built-app HTTP regression passed. Desktop browser confirmed the updated hero image, section navigation and no horizontal overflow at 1280px; mobile visual review remains pending. No real development records, commits, pushes or deployments were created.
+
+## Wedding setup (27 October 2026)
+
+Implemented; automated verification passed; user review completed on 28 October 2026. Built the approved Stitch setup and completed-overview layouts with real draft persistence, completion/editing, field validation, conflict recovery, fixed IST date handling and six transactionally seeded private draft ceremonies. Login now leads incomplete weddings to setup; complete weddings see the saved overview. Explicit index tooling includes the required preset unique index.
+
+See [implementation plan](implementation-plan.md#wedding-setup-milestone-27-october-2026) for API decisions, prototype adaptations and deferred features. Ceremony editing/publishing and external link settings are not included.
+
+Wedding setup verification: eight setup tests, ten authentication integration tests, six security/unit tests and one expanded built-app HTTP test passed. Coverage includes real draft resume, completion/overview, saved edits, concurrent/stale updates, missing indexes, transactional rollback and tenant isolation. Format:check, lint, typecheck and production build passed. Applied non-destructive application indexes to the configured isolated development database; no account or wedding records were created there. The browser could not reach the isolated fixture server, so interactive desktop/mobile visual review remains pending. The fixture session was interrupted after that attempt.
+
+Final build follow-up: Windows/OneDrive intermittently denied generated .next directory creation. The production build passed with local generated-directory preparation; no source compiler workaround was added. Ordinary npm run build had also passed earlier. Keep this environment limitation separate from the unperformed interactive visual review.
