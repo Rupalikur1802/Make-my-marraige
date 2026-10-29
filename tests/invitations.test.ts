@@ -33,6 +33,7 @@ import {
   prepareInvitationEmail,
   sendInvitationEmail,
   invitationManagement,
+  acceptGuestInvitation,
 } from "../src/modules/invitations/service.server";
 import { invitationModels } from "../src/modules/invitations/model.server";
 import {
@@ -45,6 +46,7 @@ import { POST as exchange } from "../src/app/api/guest/exchange/route";
 import { GET as guestGet } from "../src/app/api/guest/invitation/route";
 import { POST as send } from "../src/app/api/families/[id]/email/route";
 import { GET as familyGet } from "../src/app/api/families/route";
+import { POST as acceptInvitation } from "../src/app/api/guest/accept/route";
 let mongo: MongoMemoryReplSet,
   sequence = 0;
 const code = (expected: string) => (error: unknown) =>
@@ -136,6 +138,131 @@ async function prepare(
     now,
   );
 }
+
+test("email invitation can be accepted explicitly and the owning couple sees it without changing ceremony attendance", async () => {
+  const f = await fixture(),
+    other = await fixture();
+  const prepared = await prepare(f);
+  assert.equal(
+    (
+      await sendInvitationEmail(
+        f.auth.data,
+        f.family.id,
+        { attemptId: prepared.id, token: f.token },
+        accepted,
+      )
+    ).status,
+    "accepted",
+  );
+  const guest = await exchangeInvitation(f.token, "accept-flow");
+  assert.equal(
+    (await guestInvitation(guest.token)).family.invitationAcceptedAt,
+    null,
+  );
+  const before = await getFamily(f.auth.data, f.family.id);
+  assert.equal(before.invitationAcceptedAt, null);
+  const results = await Promise.all([
+    acceptGuestInvitation(guest.token),
+    acceptGuestInvitation(guest.token),
+  ]);
+  assert.ok(results[0]!.family.invitationAcceptedAt);
+  assert.equal(
+    results[0]!.family.invitationAcceptedAt,
+    results[1]!.family.invitationAcceptedAt,
+  );
+  const after = await getFamily(f.auth.data, f.family.id);
+  assert.equal(
+    after.invitationAcceptedAt,
+    results[0]!.family.invitationAcceptedAt,
+  );
+  assert.equal(after.revision, before.revision + 1);
+  assert.deepEqual(after.eventAssignments, before.eventAssignments);
+  assert.equal(
+    (await invitationManagement(f.auth.data, f.family.id)).family
+      .invitationAcceptedAt,
+    after.invitationAcceptedAt,
+  );
+  await assert.rejects(
+    getFamily(other.auth.data, f.family.id),
+    code("NOT_FOUND"),
+  );
+});
+
+test("acceptance requires the current unexpired guest session and persists through link replacement", async () => {
+  const f = await fixture();
+  await assert.rejects(
+    acceptGuestInvitation(undefined),
+    code("UNAUTHENTICATED"),
+  );
+  await assert.rejects(
+    acceptGuestInvitation(f.auth.token),
+    code("UNAUTHENTICATED"),
+  );
+  const guest = await exchangeInvitation(f.token, "accept-revocation");
+  await assert.rejects(
+    acceptGuestInvitation(guest.token, new Date(guest.expiresAt.getTime() + 1)),
+    code("UNAUTHENTICATED"),
+  );
+  const result = await acceptGuestInvitation(guest.token);
+  let family = await getFamily(f.auth.data, f.family.id);
+  await generateInvitationLink(f.auth.data, family.id, {
+    expectedRevision: family.revision,
+    replace: true,
+  });
+  await assert.rejects(
+    acceptGuestInvitation(guest.token),
+    code("UNAUTHENTICATED"),
+  );
+  family = await getFamily(f.auth.data, f.family.id);
+  assert.equal(family.invitationAcceptedAt, result.family.invitationAcceptedAt);
+  await deleteFamily(f.auth.data, family.id, family.revision);
+  await assert.rejects(
+    acceptGuestInvitation(guest.token),
+    code("UNAUTHENTICATED"),
+  );
+});
+
+test("acceptance API rejects cross-origin requests and supplied identities; opening alone never accepts", async () => {
+  const f = await fixture(),
+    guest = await exchangeInvitation(f.token, "accept-api");
+  const cookie = "__Host-guest_session=" + guest.token;
+  assert.equal(
+    (
+      await acceptInvitation(
+        request(
+          "/api/guest/accept",
+          "POST",
+          {},
+          cookie,
+          "https://other.example.test",
+        ),
+      )
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await acceptInvitation(
+        request("/api/guest/accept", "POST", { familyId: f.family.id }, cookie),
+      )
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await acceptInvitation(request("/api/guest/accept", "POST", {}))).status,
+    401,
+  );
+  await guestGet(request("/api/guest/invitation", "GET", undefined, cookie));
+  assert.equal(
+    (await getFamily(f.auth.data, f.family.id)).invitationAcceptedAt,
+    null,
+  );
+  const response = await acceptInvitation(
+    request("/api/guest/accept", "POST", {}, cookie),
+  );
+  assert.equal(response.status, 200);
+  assert.ok((await response.json()).data.family.invitationAcceptedAt);
+});
 test("private link uses a fragment; database and DTOs contain no plaintext invitation token", async () => {
   const f = await fixture(),
     c = await connectDatabase();

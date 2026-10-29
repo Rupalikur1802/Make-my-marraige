@@ -27,6 +27,7 @@ function linkToken(link: string, origin: string) {
 }
 export function InvitationManager({ initial }: { initial: Management }) {
   const [data, setData] = useState(initial),
+    [email, setEmail] = useState(initial.family.email ?? ""),
     [link, setLink] = useState(""),
     [attempt, setAttempt] = useState<EmailAttemptDTO | null>(null),
     [busy, setBusy] = useState(false),
@@ -34,9 +35,9 @@ export function InvitationManager({ initial }: { initial: Management }) {
     [message, setMessage] = useState(""),
     [expired, setExpired] = useState(false),
     [preview, setPreview] = useState(false),
-    [confirm, setConfirm] = useState<"replace" | "resend" | "send" | null>(
-      null,
-    );
+    [confirm, setConfirm] = useState<
+      "replace" | "resend" | "send" | "quick" | null
+    >(null);
   const inFlight = useRef(false),
     requestKey = useRef<{ signature: string; key: string } | null>(null);
   const token = linkToken(link, data.origin),
@@ -46,9 +47,9 @@ export function InvitationManager({ initial }: { initial: Management }) {
   );
   const unresolved =
     !!data.latest && ["sending", "uncertain"].includes(data.latest.status);
-  async function json(path: string, body?: unknown) {
+  async function json(path: string, body?: unknown, method?: string) {
     const response = await fetch("/api/families/" + data.family.id + path, {
-      method: body === undefined ? "GET" : "POST",
+      method: method ?? (body === undefined ? "GET" : "POST"),
       cache: "no-store",
       ...(body === undefined
         ? {}
@@ -157,6 +158,93 @@ export function InvitationManager({ initial }: { initial: Management }) {
       );
     });
   }
+  async function quickSend(confirmed = false) {
+    if (
+      !confirmed &&
+      ((data.family.hasInvitationLink && !token) ||
+        current?.status === "accepted" ||
+        unresolved)
+    ) {
+      setConfirm("quick");
+      return;
+    }
+    await run(async () => {
+      setConfirm(null);
+      let fresh = await reload();
+      if (!fresh.deliveryAvailable)
+        throw new Error(
+          "Email sending is not configured. Ask the app administrator to check the verified sender, API key, public app URL and email enable setting.",
+        );
+      const recipient = email.trim().toLowerCase();
+      if (recipient !== fresh.family.email) {
+        await json(
+          "",
+          { expectedRevision: fresh.family.revision, email: recipient },
+          "PATCH",
+        );
+        fresh = await reload();
+      }
+      let sendToken = token;
+      let prepared = attempt;
+      if (!sendToken) {
+        // A retained token is never recoverable from its database hash.
+        if (fresh.family.hasInvitationLink && !confirmed)
+          throw new Error(
+            "An invitation link now exists. Load the latest status and confirm sending a replacement.",
+          );
+        const generated = await json("/invitation-link", {
+          expectedRevision: fresh.family.revision,
+          replace: fresh.family.hasInvitationLink,
+        });
+        setLink(generated.invitationUrl);
+        sendToken = linkToken(generated.invitationUrl, fresh.origin);
+        prepared = null;
+        fresh = await reload();
+      }
+      if (!sendToken)
+        throw new Error("Could not create the invitation link. Please retry.");
+      if (
+        !prepared ||
+        prepared.status === "accepted" ||
+        recipient !== prepared.preview.recipient
+      ) {
+        const body = {
+          expectedRevision: fresh.family.revision,
+          token: sendToken,
+          confirmResend: confirmed,
+          confirmUncertainResend: confirmed && unresolved,
+        };
+        const signature = JSON.stringify(body);
+        if (requestKey.current?.signature !== signature)
+          requestKey.current = { signature, key: crypto.randomUUID() };
+        prepared = (await json("/email-preview", {
+          ...body,
+          requestKey: requestKey.current.key,
+        })) as EmailAttemptDTO;
+        setAttempt(prepared);
+      }
+      let result;
+      try {
+        result = await json("/email", {
+          attemptId: prepared.id,
+          token: sendToken,
+        });
+      } catch (error) {
+        if (!(error instanceof InvitationRequestError))
+          setAttempt({ ...prepared, status: "uncertain" });
+        throw error;
+      }
+      setAttempt({ ...prepared, status: result.status });
+      await reload();
+      setMessage(
+        result.status === "accepted"
+          ? "Invitation email submitted. Your guest can open the link and click Accept invitation. Check their response here or in Families."
+          : result.status === "failed"
+            ? "Email could not be sent. Check the saved address and sender setup, then retry."
+            : "Sending could not be confirmed. Retry the same email rather than creating another one.",
+      );
+    });
+  }
   const canSend =
     !!token &&
     !!current &&
@@ -184,6 +272,79 @@ export function InvitationManager({ initial }: { initial: Management }) {
         </p>
       )}
       {expired && <Link href="/login">Sign in again</Link>}
+      <section className={styles.panel}>
+        <h2>Send invitation</h2>
+        <p>
+          Enter your guest’s email address and send their private invitation.
+        </p>
+        {!data.deliveryAvailable && (
+          <p className={styles.notice}>
+            Email sending is not configured. The app administrator needs to
+            enable invitation emails and configure a verified sender, Resend API
+            key and public HTTPS app URL.
+          </p>
+        )}
+        {!data.invitation.events.length && (
+          <p className={styles.notice}>
+            Assign and publish at least one ceremony before sending this
+            invitation.
+          </p>
+        )}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void quickSend();
+          }}
+        >
+          <div className={styles.field}>
+            <label htmlFor="invitation-email">Guest or family email</label>
+            <input
+              id="invitation-email"
+              type="email"
+              autoComplete="email"
+              required
+              maxLength={254}
+              value={email}
+              disabled={busy || expired}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
+          <button
+            type="submit"
+            className={styles.primary}
+            disabled={
+              busy ||
+              expired ||
+              !data.deliveryAvailable ||
+              !data.invitation.events.length
+            }
+          >
+            {busy
+              ? "Sending…"
+              : attempt &&
+                  ["failed", "uncertain", "sending"].includes(attempt.status)
+                ? "Retry invitation email"
+                : current?.status === "accepted"
+                  ? "Send again"
+                  : "Send invitation"}
+          </button>
+        </form>
+        <p role="status">
+          {data.family.invitationAcceptedAt
+            ? "Guest accepted the invitation on " +
+              new Date(data.family.invitationAcceptedAt).toLocaleString(
+                "en-IN",
+                {
+                  timeZone: "Asia/Kolkata",
+                },
+              )
+            : "Guest response: Awaiting acceptance"}
+        </p>
+        <p className={styles.muted}>
+          Email submission and guest acceptance are separate. Refresh status to
+          see the guest’s response.
+        </p>
+      </section>
       <div className={styles.actions}>
         <button
           type="button"
@@ -201,180 +362,211 @@ export function InvitationManager({ initial }: { initial: Management }) {
           Load latest details / status
         </button>
       </div>
-      <section className={styles.panel}>
-        <h2>Family invitation link</h2>
-        <p>
-          {data.family.hasInvitationLink
-            ? "A private invitation link exists. Paste your retained current link below, or explicitly replace it if it was lost."
-            : "Generate a private link for this family. Share it only with the intended recipients."}
-        </p>
-        <p className={styles.notice}>
-          Anyone holding this link can open this family’s invitation. The
-          complete link is shown once and is kept only in this open page.
-        </p>
-        <button
-          className={styles.primary}
-          type="button"
-          disabled={busy || expired}
-          onClick={() =>
-            data.family.hasInvitationLink
-              ? setConfirm("replace")
-              : void generate()
-          }
-        >
-          {data.family.hasInvitationLink
-            ? "Generate replacement link"
-            : "Generate invitation link"}
-        </button>
-        <div className={styles.field} style={{ marginTop: 20 }}>
-          <label htmlFor="current-invitation-link">
-            Current private invitation link
-          </label>
-          <input
-            id="current-invitation-link"
-            type="url"
-            autoComplete="off"
-            spellCheck={false}
-            value={link}
-            onChange={(e) => {
-              setLink(e.target.value);
-              setAttempt(null);
-            }}
-            placeholder="Paste a retained current invitation link"
-            disabled={busy || expired}
-          />
-        </div>
-        <div className={styles.actions}>
+      <details>
+        <summary>Invitation link and email details</summary>
+        <section className={styles.panel}>
+          <h2>Family invitation link</h2>
+          <p>
+            {data.family.hasInvitationLink
+              ? "A private invitation link exists. Paste your retained current link below, or explicitly replace it if it was lost."
+              : "Generate a private link for this family. Share it only with the intended recipients."}
+          </p>
+          <p className={styles.notice}>
+            Anyone holding this link can open this family’s invitation. The
+            complete link is shown once and is kept only in this open page.
+          </p>
           <button
+            className={styles.primary}
             type="button"
-            className={styles.secondary}
-            disabled={!token || busy}
+            disabled={busy || expired}
             onClick={() =>
-              void run(async () => {
-                try {
-                  await navigator.clipboard.writeText(link);
-                  setMessage("Invitation link copied.");
-                } catch {
-                  setError(
-                    "Clipboard access was unavailable. Select the link and copy it manually.",
-                  );
-                }
-              })
+              data.family.hasInvitationLink
+                ? setConfirm("replace")
+                : void generate()
             }
           >
-            Copy link
+            {data.family.hasInvitationLink
+              ? "Generate replacement link"
+              : "Generate invitation link"}
           </button>
-          <button
-            className={styles.secondary}
-            type="button"
-            onClick={() => setPreview((v) => !v)}
-          >
-            {preview ? "Hide invitation preview" : "Preview invitation"}
-          </button>
-        </div>
-      </section>
-      {drafts.length > 0 && (
-        <p className={styles.notice}>
-          Assigned draft ceremonies are excluded from the guest invitation:{" "}
-          {drafts.map((e) => e.eventName).join(", ")}.
-        </p>
-      )}
-      {!data.invitation.events.length && (
-        <p className={styles.notice}>
-          No published ceremonies are assigned. Assign and publish a ceremony
-          before preparing an email.
-        </p>
-      )}
-      {!data.deliveryAvailable && (
-        <p className={styles.notice}>
-          Email sending is unavailable. You can still generate, copy and preview
-          a link. Contact the app administrator to enable email invitations.
-        </p>
-      )}
-      <section className={styles.panel}>
-        <h2>Email invitation</h2>
-        <p>
-          Prepare a personalized email to this family’s saved address. Saving a
-          family never sends automatically.
-        </p>
-        {!data.family.email && (
-          <p>Add an invitation email in the family details first.</p>
+          <div className={styles.field} style={{ marginTop: 20 }}>
+            <label htmlFor="current-invitation-link">
+              Current private invitation link
+            </label>
+            <input
+              id="current-invitation-link"
+              type="url"
+              autoComplete="off"
+              spellCheck={false}
+              value={link}
+              onChange={(e) => {
+                setLink(e.target.value);
+                setAttempt(null);
+              }}
+              placeholder="Paste a retained current invitation link"
+              disabled={busy || expired}
+            />
+          </div>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.secondary}
+              disabled={!token || busy}
+              onClick={() =>
+                void run(async () => {
+                  try {
+                    await navigator.clipboard.writeText(link);
+                    setMessage("Invitation link copied.");
+                  } catch {
+                    setError(
+                      "Clipboard access was unavailable. Select the link and copy it manually.",
+                    );
+                  }
+                })
+              }
+            >
+              Copy link
+            </button>
+            <button
+              className={styles.secondary}
+              type="button"
+              onClick={() => setPreview((v) => !v)}
+            >
+              {preview ? "Hide invitation preview" : "Preview invitation"}
+            </button>
+          </div>
+        </section>
+        {drafts.length > 0 && (
+          <p className={styles.notice}>
+            Assigned draft ceremonies are excluded from the guest invitation:{" "}
+            {drafts.map((e) => e.eventName).join(", ")}.
+          </p>
         )}
-        <button
-          className={styles.primary}
-          type="button"
-          disabled={
-            busy ||
-            expired ||
-            !token ||
-            !data.family.email ||
-            !data.invitation.events.length
-          }
-          onClick={() => void prepare()}
-        >
-          Prepare email invitation
-        </button>
-        {current && (
-          <>
-            <p className={styles.eyebrow} style={{ marginTop: 24 }}>
-              Email attempt · {current.status}
-            </p>
-            <dl>
-              <dt>To</dt>
-              <dd>{current.preview.recipient}</dd>
-              <dt>From</dt>
-              <dd>{current.preview.sender || "Sender not configured"}</dd>
-              <dt>Subject</dt>
-              <dd>{current.preview.subject}</dd>
-            </dl>
-            <p>Dear {current.preview.invitation.family.name},</p>
-            <p>
-              We would love to celebrate with you. Open your invitation to view
-              the ceremonies your family is invited to.
-            </p>
-            <p>
-              This email is for this family only. Its private link opens the
-              personalized invitation below.
-            </p>
-            {current.status === "accepted" ? (
-              <p role="status" className={styles.success}>
-                Accepted for sending. Inbox delivery has not been verified.
-                Prepare another preview for a deliberate resend.
+        {!data.invitation.events.length && (
+          <p className={styles.notice}>
+            No published ceremonies are assigned. Assign and publish a ceremony
+            before preparing an email.
+          </p>
+        )}
+        {!data.deliveryAvailable && (
+          <p className={styles.notice}>
+            Email sending is unavailable. You can still generate, copy and
+            preview a link. Contact the app administrator to enable email
+            invitations.
+          </p>
+        )}
+        <section className={styles.panel}>
+          <h2>Email invitation</h2>
+          <p>
+            Prepare a personalized email to this family’s saved address. Saving
+            a family never sends automatically.
+          </p>
+          {!data.family.email && (
+            <p>Add an invitation email in the family details first.</p>
+          )}
+          <button
+            className={styles.primary}
+            type="button"
+            disabled={
+              busy ||
+              expired ||
+              !token ||
+              !data.family.email ||
+              !data.invitation.events.length
+            }
+            onClick={() => void prepare()}
+          >
+            Prepare email invitation
+          </button>
+          {current && (
+            <>
+              <p className={styles.eyebrow} style={{ marginTop: 24 }}>
+                Email attempt · {current.status}
               </p>
-            ) : (
-              <>
-                <p className={styles.muted}>
-                  Retries reuse this attempt for up to 23 hours. A new send may
-                  create another email; it never replaces the invitation link.
+              <dl>
+                <dt>To</dt>
+                <dd>{current.preview.recipient}</dd>
+                <dt>From</dt>
+                <dd>{current.preview.sender || "Sender not configured"}</dd>
+                <dt>Subject</dt>
+                <dd>{current.preview.subject}</dd>
+              </dl>
+              <p>Dear {current.preview.invitation.family.name},</p>
+              <p>
+                We would love to celebrate with you. Open your invitation to
+                view the ceremonies your family is invited to.
+              </p>
+              <p>
+                This email is for this family only. Its private link opens the
+                personalized invitation below.
+              </p>
+              {current.status === "accepted" ? (
+                <p role="status" className={styles.success}>
+                  Accepted for sending. Inbox delivery has not been verified.
+                  Prepare another preview for a deliberate resend.
                 </p>
-                <button
-                  className={styles.primary}
-                  type="button"
-                  disabled={busy || !canSend}
-                  onClick={() => setConfirm("send")}
-                >
-                  {current.status === "ready"
-                    ? "Review and send invitation"
-                    : "Review and retry same email"}
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <p className={styles.muted}>
+                    Retries reuse this attempt for up to 23 hours. A new send
+                    may create another email; it never replaces the invitation
+                    link.
+                  </p>
+                  <button
+                    className={styles.primary}
+                    type="button"
+                    disabled={busy || !canSend}
+                    onClick={() => setConfirm("send")}
+                  >
+                    {current.status === "ready"
+                      ? "Review and send invitation"
+                      : "Review and retry same email"}
+                  </button>
+                </>
+              )}
+            </>
+          )}
+        </section>
+        {preview && (
+          <>
+            <p className={styles.eyebrow}>
+              Couple preview · Assigned published ceremonies only
+            </p>
+            <InvitationCard
+              invitation={
+                current?.status === "ready"
+                  ? current.preview.invitation
+                  : data.invitation
+              }
+            />
           </>
         )}
-      </section>
-      {preview && (
-        <>
-          <p className={styles.eyebrow}>
-            Couple preview · Assigned published ceremonies only
+      </details>
+      {confirm === "quick" && (
+        <Confirm
+          title="Send another invitation?"
+          busy={busy}
+          confirmLabel="Send invitation"
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => void quickSend(true)}
+        >
+          <p>
+            Send to <strong>{email}</strong>.
           </p>
-          <InvitationCard
-            invitation={
-              current?.status === "ready"
-                ? current.preview.invitation
-                : data.invitation
-            }
-          />
-        </>
+          {data.family.hasInvitationLink && !token && (
+            <p>
+              A new private link will replace the previous link, which will stop
+              working. Existing guest sessions will end. Any recorded acceptance
+              is kept.
+            </p>
+          )}
+          {unresolved && (
+            <p>
+              The previous send could not be confirmed. Another email may create
+              a duplicate. Check with the guest or provider before continuing.
+            </p>
+          )}
+        </Confirm>
       )}
       {confirm === "replace" && (
         <Confirm

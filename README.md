@@ -273,3 +273,9 @@ Accepted means Resend accepted the request, not delivered/read/inbox placement. 
 A deliberate resend requires another preview/confirmation and at least a one-minute cooldown. An unresolved prior send requires checking status or retrying the same attempt; explicitly preparing another email acknowledges that the prior one may already have been accepted and the new send could duplicate it. Expired attempts are not automatically retried. Link replacement and family deletion immediately revoke in-app access but cannot recall an email already accepted by the provider. Email attempt metadata is retained until family deletion so accepted attempts are not silently forgotten. There are no queues, bulk sends, scheduled reminders, delivery webhooks or open tracking.
 
 At implementation verification, the saved local file still lacked email credentials/sender/enable settings and used a local origin. Live Resend authentication, sender-domain verification and real inbox delivery were not performed. Desktop/mobile visual review and target Node.js 24 verification remain pending; automated HTTP tests do not establish those checks.
+
+### Send and accept an invitation
+
+Open Families, choose Manage invitation, enter the guest/family email and click Send invitation. The app saves the address, prepares the private invitation and submits one email. An existing lost link requires confirmation before replacement. Advanced manual link and preview controls are available under Invitation link and email details. A published assigned ceremony and configured server email delivery are still required.
+
+The guest opens the email link and clicks Accept invitation. Opening alone does not accept. The couple refreshes Families or the invitation status to see Accepted with a timestamp. This is one family acknowledgement; it does not submit ceremony attendance counts. Email-provider acceptance is separate from guest acceptance and does not guarantee inbox delivery.

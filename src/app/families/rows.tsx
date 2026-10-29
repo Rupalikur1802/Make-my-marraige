@@ -14,6 +14,7 @@ export function FamilyRows({ families }: { families: FamilyList["families"] }) {
           <th scope="col">Family name</th>
           <th scope="col">Invitation email</th>
           <th scope="col">Invited members</th>
+          <th scope="col">Guest response</th>
           <th scope="col">Assigned ceremonies</th>
           <th scope="col">Actions</th>
         </tr>
@@ -30,6 +31,22 @@ export function FamilyRows({ families }: { families: FamilyList["families"] }) {
             </td>
             <td>
               <span className={styles.count}>{f.invitedCount} members</span>
+            </td>
+            <td>
+              <span className={styles.mobileLabel}>Guest response</span>
+              {f.invitationAcceptedAt ? (
+                <>
+                  <strong>Accepted</strong>
+                  <br />
+                  <time dateTime={f.invitationAcceptedAt}>
+                    {new Date(f.invitationAcceptedAt).toLocaleString("en-IN", {
+                      timeZone: "Asia/Kolkata",
+                    })}
+                  </time>
+                </>
+              ) : (
+                "Awaiting acceptance"
+              )}
             </td>
             <td>
               <span className={styles.mobileLabel}>Assigned ceremonies</span>

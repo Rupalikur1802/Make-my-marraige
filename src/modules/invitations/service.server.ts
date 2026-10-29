@@ -130,7 +130,11 @@ async function view(
       weddingDate: wedding.weddingDate ?? "",
       venue: wedding.venue ?? "",
     },
-    family: { name: family.name, invitedCount: family.invitedCount },
+    family: {
+      name: family.name,
+      invitedCount: family.invitedCount,
+      invitationAcceptedAt: family.invitationAcceptedAt?.toISOString() ?? null,
+    },
     events: events.flatMap((e) =>
       e.startsAt && e.venue
         ? [
@@ -578,6 +582,19 @@ export async function guestInvitation(
   token: string | undefined,
   now = new Date(),
 ): Promise<GuestInvitation> {
+  return guestInvitationAction(token, now, false);
+}
+export async function acceptGuestInvitation(
+  token: string | undefined,
+  now = new Date(),
+) {
+  return guestInvitationAction(token, now, true);
+}
+async function guestInvitationAction(
+  token: string | undefined,
+  now: Date,
+  accept: boolean,
+): Promise<GuestInvitation> {
   if (!token || !invitationTokenSchema.safeParse(token).success)
     throw new AuthError(
       "UNAUTHENTICATED",
@@ -602,15 +619,31 @@ export async function guestInvitation(
         "Reopen your invitation link to continue.",
       );
     const family = await familyModels(c)
-      .Family.exists({
+      .Family.findOne({
         _id: saved.familyId,
         weddingId: saved.weddingId,
         tokenVersion: saved.tokenVersion,
         tokenHash: { $type: "string" },
       })
-      .session(session);
+      .session(session)
+      .lean();
     if (!family) throw invalid();
-    return view(saved.weddingId, saved.familyId, session);
+    const invitation = await view(saved.weddingId, saved.familyId, session);
+    if (accept && !family.invitationAcceptedAt) {
+      const updated = await familyModels(c).Family.updateOne(
+        {
+          _id: family._id,
+          weddingId: saved.weddingId,
+          tokenVersion: saved.tokenVersion,
+          revision: family.revision,
+        },
+        { $set: { invitationAcceptedAt: now }, $inc: { revision: 1 } },
+        { session },
+      );
+      if (updated.modifiedCount !== 1) throw invalid();
+      invitation.family.invitationAcceptedAt = now.toISOString();
+    }
+    return invitation;
   });
 }
 export async function logoutGuest(token: string | undefined) {

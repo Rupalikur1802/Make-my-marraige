@@ -34,6 +34,7 @@ export const guestInvitationSchema = z.object({
   family: z.object({
     name: z.string(),
     invitedCount: z.number().int().positive(),
+    invitationAcceptedAt: z.string().nullable().optional(),
   }),
   events: z.array(
     z.object({

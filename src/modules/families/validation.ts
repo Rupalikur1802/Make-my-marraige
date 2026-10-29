@@ -78,6 +78,7 @@ export type FamilyDTO = {
   id: string;
   name: string;
   email: string | null;
+  invitationAcceptedAt: string | null;
   invitedCount: number;
   hasInvitationLink: boolean;
   tokenVersion: number;

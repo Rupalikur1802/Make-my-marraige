@@ -509,7 +509,34 @@ test(
         headers: { Cookie: guestCookie },
       });
       assert.equal(guestPage.status, 200);
-      assert.match(await guestPage.text(), /HTTP Invitation Family/);
+      const guestHtml = await guestPage.text();
+      assert.match(guestHtml, /HTTP Invitation Family/);
+      assert.match(guestHtml, /Accept invitation/);
+      assert.equal(invitation.family.invitationAcceptedAt, null);
+      const acceptance = await fetch(origin + "/api/guest/accept", {
+        method: "POST",
+        headers: {
+          Origin: origin,
+          "Content-Type": "application/json",
+          Cookie: guestCookie,
+        },
+        body: "{}",
+      });
+      assert.equal(acceptance.status, 200);
+      const acceptedAt = (await acceptance.json()).data.family
+        .invitationAcceptedAt;
+      assert.ok(acceptedAt);
+      const coupleFamily = await fetch(origin + invitationPath, {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(
+        (await coupleFamily.json()).data.invitationAcceptedAt,
+        acceptedAt,
+      );
+      const acceptedRows = await fetch(origin + "/families", {
+        headers: { Cookie: cookie },
+      });
+      assert.match(await acceptedRows.text(), /Accepted/);
       const guestDenied = await fetch(origin + "/api/families", {
         headers: { Cookie: guestCookie },
       });
@@ -558,6 +585,16 @@ test(
         headers: { Cookie: guestCookie },
       });
       assert.equal(guestRevoked.status, 401);
+      const revokedAcceptance = await fetch(origin + "/api/guest/accept", {
+        method: "POST",
+        headers: {
+          Origin: origin,
+          "Content-Type": "application/json",
+          Cookie: guestCookie,
+        },
+        body: "{}",
+      });
+      assert.equal(revokedAcceptance.status, 401);
       const invalidatedLink = await fetch(origin + "/api/guest/exchange", {
         method: "POST",
         headers: { Origin: origin, "Content-Type": "application/json" },

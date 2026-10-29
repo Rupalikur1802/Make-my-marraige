@@ -50,6 +50,7 @@ function dto(f: FamilyRecord & { _id: Types.ObjectId }): FamilyDTO {
     id: f._id.toString(),
     name: f.name,
     email: f.email ?? null,
+    invitationAcceptedAt: f.invitationAcceptedAt?.toISOString() ?? null,
     invitedCount: f.invitedCount,
     hasInvitationLink: !!f.tokenHash,
     tokenVersion: f.tokenVersion,

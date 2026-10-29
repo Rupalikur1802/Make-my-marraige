@@ -34,7 +34,9 @@ export default async function GuestPage() {
         <>
           <InvitationCard invitation={invitation} />
           <div className={styles.card}>
-            <GuestActions />
+            <GuestActions
+              acceptedAt={invitation.family.invitationAcceptedAt ?? null}
+            />
           </div>
         </>
       ) : (

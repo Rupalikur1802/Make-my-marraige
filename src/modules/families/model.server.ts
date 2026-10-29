@@ -30,6 +30,7 @@ const familySchema = new Schema(
     tokenVersion: integer,
     revision: integer,
     emailAttemptId: { type: Schema.Types.ObjectId, select: false },
+    invitationAcceptedAt: Date,
   },
   options,
 );
