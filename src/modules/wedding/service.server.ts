@@ -61,11 +61,13 @@ export async function getSetupCeremonies(actor: Actor): Promise<CeremonyDTO[]> {
       startsAt: event.startsAt?.toISOString() ?? null,
       venue: event.venue ?? null,
     }))
-    .sort(
-      (a, b) =>
-        ceremonyPresets.findIndex((p) => p.key === a.presetKey) -
-        ceremonyPresets.findIndex((p) => p.key === b.presetKey),
-    );
+    .sort((a, b) => {
+      const rank = (key: string | null) => {
+        const index = ceremonyPresets.findIndex((p) => p.key === key);
+        return index < 0 ? ceremonyPresets.length : index;
+      };
+      return rank(a.presetKey) - rank(b.presetKey);
+    });
 }
 export async function updateWedding(actor: Actor, input: unknown) {
   const patch = weddingPatchSchema.parse(input);

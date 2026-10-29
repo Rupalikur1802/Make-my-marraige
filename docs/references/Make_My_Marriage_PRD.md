@@ -1,3 +1,5 @@
+> Invitation contact update (28 October 2026): family email is optional. Individual email invitation links through Resend are the planned channel; contact storage does not implement sending or guest access.
+
 # **Make My Marriage** 
 
 Product Requirements Document | Version 1.0 
@@ -30,7 +32,7 @@ The application will provide one place to manage this information and a simple w
 
 - Collect attendance counts without guest registration. 
 
-- Share invitations and reminders through WhatsApp. 
+- Send individual invitation emails after preview and confirmation.
 
 - Provide directions, YouTube livestreams, and shared photos. 
 
@@ -62,7 +64,7 @@ MAKE MY MARRIAGE  |  PRD v1.0
 
 - 4. Add families and select their invited events. 
 
-- 5. Share personalized invitation links through WhatsApp. 
+- 5. Share personalized invitation links through email.
 
 - 6. Manage tasks, record expenses, and monitor RSVPs. 
 
@@ -70,7 +72,7 @@ MAKE MY MARRIAGE  |  PRD v1.0
 
 ### **Guest journey** 
 
-- 1. Open the family invitation link received through WhatsApp. 
+- 1. Open the family invitation link received through email.
 
 - 2. View the invitation and the events the family is invited to. 
 
@@ -216,11 +218,11 @@ For the first version, each expense has one payer. Shared purchases can be enter
 
 ### **6.7 Family-based guest management** 
 
-Each family record contains a family name, WhatsApp number including country code, invited member count, selected events, unique invitation link, and RSVP status for each invited event. 
+Each family record contains a family name, optional invitation email address, invited member count, selected events, unique invitation link, and RSVP status for each invited event.
 
 - Add, edit, and remove families. 
 
-- Search by family name or phone number. 
+- Search by family name or email address.
 
 - View invited and confirmed member counts by event. 
 
@@ -250,7 +252,7 @@ Each family record contains a family name, WhatsApp number including country cod
 
 - Include dates, times, venues, directions, and RSVP access. 
 
-- Provide a WhatsApp sharing action. 
+- Provide a preview and explicit individual invitation-email action.
 
 ### **Acceptance criteria** 
 
@@ -284,21 +286,21 @@ For each invited event, the family representative can select attending or not at
 
 - Guests cannot submit responses for events they are not invited to. 
 
-### **6.10 WhatsApp sharing and reminders** 
+### **6.10 Individual email invitations**
 
-Provide prepared messages for sending an invitation, requesting a pending RSVP, reminding a family about an upcoming event, and sharing an event update. 
+Provide a personalized email preview containing the family's private invitation link. Send to one saved family email at a time; bulk sending and scheduled reminders are excluded.
 
-The couple selects a family and opens WhatsApp with a prepared message. The couple reviews and sends it manually. 
+The couple selects a family, reviews its saved recipient address and invitation preview, and explicitly confirms sending. The server sends through Resend; saving a family or email address never sends automatically.
 
 ### **Acceptance criteria** 
 
 - Messages include the relevant invitation link. 
 
-- Event reminders reference only events assigned to that family. 
+- Email content references only published ceremonies assigned to that family.
 
-- The application does not claim a message was delivered or read. 
+- Show provider acceptance separately from delivery; do not claim delivered, opened or read.
 
-- Automatic scheduling and automatic WhatsApp delivery are outside the first version. 
+- Scheduled reminders and bulk sending are outside the first version.
 
 ### **6.11 Guest wedding page** 
 
@@ -392,7 +394,7 @@ MAKE MY MARRIAGE  |  PRD v1.0
 
 6 
 
-Family: Wedding, family name, WhatsApp number, invited count, invitation token. 
+Family: Wedding, family name, invitation email address, invited count, invitation token.
 
 Event invitation: Family, event, RSVP status, attending count. 
 
@@ -484,7 +486,7 @@ The first release includes all features in Section 6:
 
 - Event-wise RSVP. 
 
-- Manual WhatsApp sharing and reminders. 
+- Individual email invitations.
 
 - Directions and schedules. 
 
@@ -504,7 +506,7 @@ The first release includes all features in Section 6:
 
 - Payment processing or paid subscriptions. 
 
-- Automated WhatsApp messaging. 
+- Scheduled or bulk invitation emails.
 
 - Accommodation, transport, and room allocation. 
 
@@ -542,7 +544,7 @@ MAKE MY MARRIAGE  |  PRD v1.0
 
 - RSVP updates produce accurate event attendance totals. 
 
-- WhatsApp actions open the correct prepared message and invitation link. 
+- Individual email sends use the saved family recipient and current private invitation link, after preview and confirmation.
 
 - Venue links and supported YouTube embeds work. 
 
@@ -556,9 +558,8 @@ MAKE MY MARRIAGE  |  PRD v1.0
 
 The application will not charge users. Deployment still requires hosting, persistent data storage, authentication, and photo storage. Whether these remain free depends on provider limits and actual usage. 
 
-WhatsApp is used for manual sharing, Google Maps links provide directions, and YouTube hosts livestreams. Provider selection and the implementation technology stack remain open. 
+Individual invitation emails are planned through Resend after explicit couple confirmation. Google Maps links provide directions and YouTube hosts livestreams. Email delivery requires a verified sender and publicly reachable HTTPS app origin; neither is provisioned by the contact-field change.
 
 MAKE MY MARRIAGE  |  PRD v1.0 
 
-9 
-
+9

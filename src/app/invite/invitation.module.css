@@ -1,0 +1,103 @@
+.page {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: #f7f5ef;
+  color: #252924;
+}
+.card {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 56px);
+  background: #fffef9;
+  border: 1px solid #d9dcd1;
+  border-radius: 14px;
+}
+.brand {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #796644;
+  text-align: center;
+  margin: 0 0 32px;
+}
+.card h1 {
+  font:
+    400 clamp(2.2rem, 7vw, 3.8rem)/1.1 var(--font-serif),
+    Georgia,
+    serif;
+  text-align: center;
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+}
+.card h2 {
+  font:
+    400 1.5rem var(--font-serif),
+    Georgia,
+    serif;
+  margin: 24px 0 12px;
+  overflow-wrap: anywhere;
+}
+.card p {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.greeting {
+  text-align: center;
+  border-block: 1px solid #dfe3d5;
+  padding: 20px 0;
+  margin: 28px 0;
+}
+.events {
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+.event {
+  padding: 20px;
+  background: #f0f2e9;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.event h3 {
+  font:
+    400 1.45rem var(--font-serif),
+    Georgia,
+    serif;
+  margin: 0 0 12px;
+}
+.event p {
+  margin: 6px 0;
+  font-size: 0.9rem;
+}
+.notice {
+  color: #5b654f;
+  font-size: 0.85rem;
+  margin-top: 24px;
+}
+.button {
+  display: inline-flex;
+  padding: 12px 18px;
+  min-height: 44px;
+  border: 0;
+  background: #465344;
+  color: white;
+  border-radius: 7px;
+  font: inherit;
+  cursor: pointer;
+  margin: 10px 10px 10px 0;
+}
+.button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.button:focus-visible {
+  outline: 3px solid #a28c69;
+  outline-offset: 3px;
+}
+.error {
+  padding: 16px;
+  background: #fbefeb;
+  color: #842f2a;
+  border-radius: 8px;
+}

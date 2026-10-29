@@ -6,7 +6,7 @@ import {
   type Model,
 } from "mongoose";
 
-// Only the event fields needed for transactional setup seeding; no editing API.
+// Preset and custom ceremonies; external link settings remain deferred.
 const eventSchema = new Schema(
   {
     weddingId: { type: Schema.Types.ObjectId, required: true },
@@ -28,6 +28,8 @@ const eventSchema = new Schema(
       default: "draft",
       required: true,
     },
+    createKeyHash: { type: String, select: false },
+    createPayloadHash: { type: String, select: false },
     startsAt: { type: Date },
     venue: { type: String, maxlength: 500 },
     version: {
@@ -53,7 +55,29 @@ eventSchema.index(
     partialFilterExpression: { presetKey: { $type: "string" } },
   },
 );
-type EventRecord = InferSchemaType<typeof eventSchema>;
+eventSchema.index(
+  { weddingId: 1, createKeyHash: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { createKeyHash: { $type: "string" } },
+  },
+);
+export async function requireCreationIndex(connection: Connection) {
+  const indexes = await eventModel(connection)
+    .collection.listIndexes()
+    .toArray();
+  if (
+    !indexes.some(
+      (index) =>
+        index.key.weddingId === 1 &&
+        index.key.createKeyHash === 1 &&
+        index.unique === true &&
+        index.partialFilterExpression?.createKeyHash?.$type === "string",
+    )
+  )
+    throw new Error("Ceremony creation index is not installed.");
+}
+export type EventRecord = InferSchemaType<typeof eventSchema>;
 export function eventModel(connection: Connection): Model<EventRecord> {
   return (
     (connection.models.Event as Model<EventRecord> | undefined) ??

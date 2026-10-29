@@ -9,6 +9,13 @@ const nextConfig = {
       "/workspace",
       "/wedding/:path*",
       "/api/wedding",
+      "/ceremonies/:path*",
+      "/api/events/:path*",
+      "/families/:path*",
+      "/api/families/:path*",
+      "/invite",
+      "/guest/:path*",
+      "/api/guest/:path*",
       "/api/auth/:path*",
     ].map((source) => ({
       source,

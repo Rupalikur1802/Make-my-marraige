@@ -7,6 +7,7 @@ import {
   getWedding,
   getSetupCeremonies,
 } from "@/modules/wedding/service.server";
+import { ceremonyTiming } from "@/modules/events/validation";
 import { ceremonyPresets } from "@/modules/wedding/presets";
 import {
   WeddingHeader,
@@ -100,14 +101,20 @@ export default async function WorkspacePage() {
             <div>
               <h2 id="ceremony-title">Ceremonies</h2>
               <p>
-                Your saved ceremonies. Editing and publishing arrive in the next
-                feature.
+                Configure your saved ceremonies, then publish when the details
+                are ready.
               </p>
             </div>
-            <span className={styles.pill}>
-              {events.length} draft ceremonies
-            </span>
+            <span className={styles.pill}>{events.length} ceremonies</span>
           </div>
+          <p style={{ marginTop: "20px" }}>
+            <Link className={styles.primary} href="/ceremonies">
+              Manage ceremonies →
+            </Link>{" "}
+            <Link className={styles.primary} href="/families">
+              Manage families →
+            </Link>
+          </p>
           <ol className={styles.ceremonyGrid}>
             {events.map((event, index) => (
               <li key={event.id}>
@@ -125,16 +132,27 @@ export default async function WorkspacePage() {
                       }
                     </em>
                   </h3>
-                  <span className={styles.draft}>{event.status}</span>
-                  <p>Date, time, and venue not yet configured</p>
+                  <span
+                    className={
+                      event.status === "published"
+                        ? styles.published
+                        : styles.draft
+                    }
+                  >
+                    {event.status}
+                  </span>
+                  <p>{ceremonyTiming(event.startsAt)}</p>
+                  <p>{event.venue || "Venue: Not configured"}</p>
+                  <Link href={"/ceremonies/" + event.id} className="text-link">
+                    Edit ceremony →
+                  </Link>
                 </div>
               </li>
             ))}
           </ol>
           <p className={styles.note}>
-            These ceremonies are drafts and are not visible to guests.
-            Completing or editing setup does not publish events or send
-            invitations.
+            Draft ceremonies are not visible to guests. Publishing marks an
+            event ready for future invitations; it does not send invitations.
           </p>
         </section>
       </main>

@@ -1,4 +1,6 @@
 import "server-only";
+import { invitationModels } from "@/modules/invitations/model.server";
+import { familyModels } from "@/modules/families/model.server";
 import { eventModel } from "@/modules/events/model.server";
 import { Types } from "mongoose";
 import { connectDatabase } from "@/lib/db.server";
@@ -18,6 +20,10 @@ export async function ensureAuthIndexes() {
     Session,
     RateLimit,
     eventModel(connection),
+    familyModels(connection).Family,
+    familyModels(connection).Invitation,
+    invitationModels(connection).GuestSession,
+    invitationModels(connection).EmailAttempt,
   ])
     await model.createIndexes();
 }

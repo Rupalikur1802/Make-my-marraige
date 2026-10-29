@@ -615,3 +615,15 @@
     padding-inline: 20px;
   }
 }
+
+.published {
+  display: inline-block;
+  border-radius: 20px;
+  background: #465344;
+  color: white;
+  border: 1px solid #465344;
+  padding: 3px 10px;
+  margin-top: 8px;
+  font-size: 0.63rem;
+  text-transform: capitalize;
+}

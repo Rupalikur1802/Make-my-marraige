@@ -1,3 +1,5 @@
+> Invitation contact update (28 October 2026): family email is optional. Individual email invitation links through Resend are the planned channel; contact storage does not implement sending or guest access.
+
 # **Make My Marriage** 
 
 System Design and Architecture 
@@ -18,9 +20,9 @@ The design targets approximately 50 families and 200 externally managed photos. 
 
 ## **Included and excluded** 
 
-Included: shared couple login, wedding setup, events, tasks, spending by payer and event, family invitations, RSVP, dashboard, manual WhatsApp sharing, maps links, YouTube embeds, and OneDrive folder access. 
+Included: shared couple login, wedding setup, events, tasks, spending by payer and event, family invitations, RSVP, dashboard, individual email invitations, maps links, YouTube embeds, and OneDrive folder access.
 
-Excluded: Google Places and vendor discovery, bulk email, dedicated queues, Cloudflare R2, app-managed photo uploads, per-photo records, image processing, Microsoft Graph integration, automatic WhatsApp delivery, payment processing, and individual guest accounts. 
+Excluded: Google Places and vendor discovery, bulk email, dedicated queues, Cloudflare R2, app-managed photo uploads, per-photo records, image processing, Microsoft Graph integration, scheduled invitation delivery, payment processing, and individual guest accounts.
 
 No application or infrastructure is deployed by this document. 
 
@@ -52,9 +54,9 @@ MAKE MY MARRIAGE | SYSTEM DESIGN v1.0
 
 Couple browser / guest browser -> HTTPS -> Next.js on Vercel -> module services -> Mongoose repositories -> MongoDB Atlas. 
 
-Next.js -> Resend for password-reset email only. 
+Next.js -> Resend for password resets and explicit individual invitation emails (planned, server-side).
 
-Guest browser -> WhatsApp sharing, Google Maps directions, YouTube embeds, and OneDrive external folder. 
+Guest browser -> opens a private invitation link received by email; Google Maps directions, YouTube embeds, and OneDrive remain external.
 
 Photos never pass through Vercel or MongoDB. OneDrive owns external viewing, upload permissions and storage. 
 
@@ -82,7 +84,7 @@ Server Components call services directly; they do not make loopback requests to 
 
 - Dashboard: read-only aggregates over authoritative records. 
 
-- Sharing and photos: WhatsApp message formatting and authorized OneDrive redirects. 
+- Invitations and photos: individual email preview/sending through a server-only adapter and authorized OneDrive redirects.
 
 - Operations: provisioning, index management, migrations and optional retries. 
 
@@ -110,7 +112,7 @@ Use ObjectIds and createdAt/updatedAt timestamps. Domain records carry weddingId
 
 - events: weddingId, name, startsAt, venue, mapsUrl, youtubeVideoId, status (draft/published). Index weddingId + startsAt. 
 
-- families: weddingId, name, phoneE164, invitedCount, tokenHash, tokenVersion, revision. Unique tokenHash; index weddingId + name. 
+- families: weddingId, name, email, invitedCount, tokenHash, tokenVersion, revision. Unique tokenHash; index weddingId + name.
 
 - eventInvitations: weddingId, familyId, eventId, status (pending/attending/notAttending), attendingCount, version. Unique weddingId + familyId + eventId; index weddingId + eventId + status. 
 
@@ -212,7 +214,7 @@ Validate request fields server-side. Use 400 for invalid input, 401 for missing 
 
 Create wedding and six preset events once: engagement, haldi, mehendi, sangeet, wedding and reception. Incomplete events remain drafts. Publish only with name, date/time and venue. Setup retries must not duplicate presets. 
 
-Create a family and assignments transactionally, generate its link, construct a WhatsApp message, and let the couple send it. Opening WhatsApp does not prove delivery. Event reminders reference only assigned events. 
+Create a family and assignments transactionally. In the planned invitation milestone, generate its private link, let the couple preview the personalized email and explicitly send it to that family's saved email through Resend. Provider calls occur outside retryable transactions. Acceptance does not prove inbox delivery. Retry/resend deduplication and uncertain results must be handled before enabling sends; never silently replace an invitation link.
 
 ## **RSVP and dashboard workflow** 
 
@@ -252,9 +254,9 @@ Hiding the button does not revoke copied links, close existing OneDrive tabs, re
 
 ## **Other integrations** 
 
-Resend: password resets only; server-side API key and verified sender. 
+Resend: planned password resets and explicit individual invitation emails; server-side API key and verified sender.
 
-WhatsApp: encoded manual share messages; no delivery tracking or automated messaging. 
+Invitation email: one family per confirmed send, with preview, explicit resend and safe failure/uncertainty feedback. No bulk sends, scheduled delivery or unverified delivery/open claims.
 
 Maps: validated HTTPS direction links; no Places API or vendor discovery. 
 
@@ -362,7 +364,7 @@ MAKE MY MARRIAGE | SYSTEM DESIGN v1.0
 
 - Deletion: transaction rollback, no orphaned invitations and cross-wedding deletion denial. 
 
-- UX: phone-sized invitations, WhatsApp messages, Maps links, YouTube fallback and OneDrive permission test on a guest device. 
+- UX: phone-sized invitations, email messages, Maps links, YouTube fallback and OneDrive permission test on a guest device.
 
 - Operations: isolated preview data, safe logs, working reset sender and successful restore exercise. 
 
@@ -374,7 +376,7 @@ MAKE MY MARRIAGE | SYSTEM DESIGN v1.0
 
 3. Planning: wedding setup, events, tasks, expenses and dashboard. 
 
-4. Families: assignments, traditional invitation, versioned RSVP and manual WhatsApp sharing. 
+4. Families: assignments, traditional invitation, versioned RSVP and individual email invitations.
 
 5. External access: directions, YouTube, OneDrive link and visibility cutoff. 
 
@@ -406,5 +408,4 @@ The monolith minimizes deployment work. Custom sessions support immediate revoca
 
 MAKE MY MARRIAGE | SYSTEM DESIGN v1.0 
 
-9 
-
+9

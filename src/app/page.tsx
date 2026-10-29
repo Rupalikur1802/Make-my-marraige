@@ -493,7 +493,7 @@ export default function HomePage() {
                   <Icon name="link" />
                   <div>
                     <strong>One personal link</strong>
-                    <p>Shared manually through WhatsApp.</p>
+                    <p>A personal invitation link, shared by email.</p>
                   </div>
                 </div>
                 <div>

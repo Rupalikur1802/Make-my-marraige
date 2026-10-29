@@ -1,3 +1,5 @@
+> Invitation contact update (28 October 2026): family email is optional. Individual email invitation links through Resend are the planned channel; contact storage does not implement sending or guest access.
+
 # **Make My Marriage** 
 
 Database Design Document 
@@ -196,7 +198,7 @@ Event names are not unique. Draft presets may omit time/venue and remain hidden 
 
 - searchName: String, R; server-normalized name for simple search. 
 
-- phoneE164: String, R; normalized international WhatsApp number, max 16 including plus. 
+- email: String, O; optional invitation email address, trimmed/lowercased, max 254. Null/absent means no email saved. Do not apply provider-specific dot or plus rewriting. Email is not unique.
 
 - invitedCount: Int, R; minimum 1; no individual guest documents. 
 
@@ -208,17 +210,17 @@ Event names are not unique. Draft presets may omit time/venue and remain hidden 
 
 - createdAt, updatedAt: Date, R. 
 
-Family name and phone number are not unique. Separate households may share a contact. Invited count is per family and supplies the maximum RSVP count for each event. Adding a family does not create any guest account. 
+Family name and email address are not unique. Separate households may share a contact. Invited count is per family and supplies the maximum RSVP count for each event. Adding a family does not create any guest account.
 
 ## **Invitation lifecycle** 
 
-Generate a cryptographically random 32-byte token and persist its hash. Return the plaintext link once for copying or WhatsApp sharing. A later re-share requires rotation because plaintext is not recoverable from a hash. Explain that rotation invalidates previous links and guest sessions. 
+Generate a cryptographically random 32-byte token and persist its hash. Return the plaintext link once for copying or individual email invitations. A later re-share requires rotation because plaintext is not recoverable from a hash. Explain that rotation invalidates previous links and guest sessions.
 
 To revoke without issuing a replacement, unset tokenHash and increment tokenVersion. Every guest session checks family existence, a current tokenHash and matching tokenVersion. The link itself has no automatic expiration in version 1; session lifetime and photo-folder cutoff are separate rules. 
 
 ## **Search at this scale** 
 
-For approximately 50 families, an escaped substring search on searchName/phoneE164 within weddingId is acceptable. Bound input length and never execute raw user-provided regular expressions. No Atlas Search service is required. 
+For approximately 50 families, an escaped substring search on searchName/email within weddingId is acceptable. Bound input length and never execute raw user-provided regular expressions. No Atlas Search service is required.
 
 MAKE MY MARRIAGE | DATABASE DESIGN v1.0 
 
@@ -404,7 +406,7 @@ MAKE MY MARRIAGE | DATABASE DESIGN v1.0
 
 ## **Transaction rules** 
 
-Use Mongoose connection.transaction or session.withTransaction with the same session on every operation. Execute database operations sequentially inside the transaction; avoid Promise.all there. Transaction callbacks can retry, so keep email, WhatsApp, logging side effects with sensitive payloads, and external calls outside them. [1] 
+Use Mongoose connection.transaction or session.withTransaction with the same session on every operation. Execute database operations sequentially inside the transaction; avoid Promise.all there. Transaction callbacks can retry, so keep email, logging side effects with sensitive payloads, and external calls outside them. [1]
 
 Use the family revision as a write lock for RSVP, invited-count changes, assignment replacement and family deletion. Operations affecting event membership also write the event version before validating publication/existence. Consistent locking order: family records ordered by ID, then event records ordered by ID. Retried transactions re-read constraints. 
 
@@ -464,7 +466,7 @@ Separate dashboard queries may reflect slightly different instants during concur
 
 ## **Example household and invitations** 
 
-Family: {_id:F1, weddingId:W1, name:'Sharma Family', searchName:'sharma family', phoneE164:'+919876543210', invitedCount:5, tokenVersion:1, revision:3}. 
+Family: {_id:F1, weddingId:W1, name:'Sharma Family', searchName:'sharma family', email:'sharma@example.test', invitedCount:5, tokenVersion:1, revision:3}.
 
 Wedding invitation: {weddingId:W1, familyId:F1, eventId:E1, status:'attending', attendingCount:4, version:1}. 
 
@@ -546,5 +548,4 @@ This document specifies the database for the agreed first version. It does not c
 
 MAKE MY MARRIAGE | DATABASE DESIGN v1.0 
 
-10 
-
+10

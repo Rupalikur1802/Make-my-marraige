@@ -1,3 +1,5 @@
+> Invitation contact update (28 October 2026): family email is optional. Individual email invitation links through Resend are the planned channel; contact storage does not implement sending or guest access.
+
  ## Make My Marriage
 
 API Design Document
@@ -8,7 +10,7 @@ Version 1.0 | 26 October 2026 | Next.js + TypeScript
 
 HTTP contracts for the agreed PRD, architecture and database design. One provisioned shared couple account owns one wedding. Guests use family invitation links without accounts. This document does not implement or deploy endpoints.
 
-Included: sessions, password reset, wedding setup, dashboard, events, tasks, expenses, families, invitations, event-wise RSVP, manual WhatsApp sharing, Maps, YouTube and external OneDrive access.
+Included: sessions, password reset, wedding setup, dashboard, events, tasks, expenses, families, invitations, event-wise RSVP, individual email invitations, Maps, YouTube and external OneDrive access.
 
 Excluded: signup, vendor discovery, bulk email, payments, individual guest profiles, photo uploads, R2 and Microsoft Graph. OneDrive handles photo storage, permissions and cleanup externally.
 
@@ -148,15 +150,15 @@ PATCH /api/expenses/:id | Couple | 200. expectedVersion plus description,amountP
 
 ## Family reads and creation
 
-Family DTO: id,name,phoneE164,invitedCount,hasInvitationLink,tokenVersion,revision,createdAt,updatedAt. Detail includes eventAssignments [{eventId,eventName,eventStatus,invitationId,status,attendingCount,respondedAt,version}]. Never return tokenHash.
+Family DTO: id,name,email,invitedCount,hasInvitationLink,tokenVersion,revision,createdAt,updatedAt. Detail includes eventAssignments [{eventId,eventName,eventStatus,invitationId,status,attendingCount,respondedAt,version}]. Never return tokenHash.
 
 GET /api/families | Couple | 200. Filters q,eventId,rsvpStatus,page/pageSize. rsvpStatus requires eventId. Sort normalized family name/ID. List omits full assignment arrays. GET /api/families/:id returns detail.
 
 POST /api/families | Couple | 201. Body {name:'Sharma
 
-Family',phoneE164:'+919876543210',invitedCount:5,eventIds:['E1','E2']}. name 1-150, valid international phone, positive integer count; eventIds unique and same wedding. Create family/pending assignments transactionally. Return detail and Location. Names/phones need not be unique.
+Family',email:'sharma@example.test',invitedCount:5,eventIds:['E1','E2']}. name 1-150, optional valid email (trimmed/lowercased, max 254; null or empty clears it), positive integer count; eventIds unique and same wedding. Create family/pending assignments transactionally. Return detail and Location. Names/emails need not be unique.
 
-PATCH /api/families/:id | Couple | 200. expectedRevision plus name,phoneE164,invitedCount. Count below existing confirmed attendance: 409 INVITED_COUNT_CONFLICT with safe conflicting invitation counts. Do not silently change RSVP.
+PATCH /api/families/:id | Couple | 200. expectedRevision plus name,email,invitedCount. Omitted email remains unchanged; null or empty clears it. Email is nullable in DTOs and is not unique. Count below existing confirmed attendance: 409 INVITED_COUNT_CONFLICT with safe conflicting invitation counts. Do not silently change RSVP.
 
 DELETE /api/families/:id?expectedRevision=2 | Couple | 204. Delete family, assignments and guest sessions. OneDrive permissions remain external.
 
@@ -210,9 +212,9 @@ Button cutoff: 00:00 Asia/Kolkata on weddingDate plus seven calendar days. Examp
 
 Website hides button only. Copied link, downloaded files or an open OneDrive tab remain outside its control. Couple manually saves photos, revokes sharing and deletes files. No file inspection or JPEG enforcement. No upload, photo-list or photo-delete APIs.
 
-## WhatsApp, Maps and YouTube
+## Individual email invitations, Maps and YouTube
 
-Frontend uses generated invitation link, family phone and encoded text to open WhatsApp. Couple reviews/sends manually; no delivery status. Later reminders require a saved link or explicit rotation, which revokes previous links. No reminder scheduling endpoint or guest email batch exists.
+Planned: the couple previews a personalized invitation and explicitly sends it to one family's saved email address through server-side Resend. Require a valid saved email, current family invitation link and assigned published ceremonies. Return acceptance rather than claiming delivery or opening. Keep provider calls outside database transactions; define retry deduplication and uncertain-result handling before implementation. Never rotate a link silently for a send or resend. Link/email routes and guest access remain unimplemented in the contact-field milestone; finalize the send contract in that milestone. No bulk sends or scheduled reminders.
 
 Maps links are approved HTTPS URLs returned only for assigned events. YouTube URL input is parsed to a supported video ID; construct safe embed/direct URLs. No arbitrary iframe HTML or server fetching of user URLs. Public/unlisted videos may remain accessible outside the app; hiding a link is not provider access control.
 

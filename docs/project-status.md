@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 28 October 2026
+Last updated: 29 October 2026
 
 This is the ongoing record of major features and milestones delivered in Make My Marriage. Update it whenever a major feature is built or materially changed, including its status, delivered scope, verification, and remaining work. Only mark confirmed work complete; record pending review and verification explicitly.
 
@@ -8,18 +8,31 @@ See [implementation plan](implementation-plan.md) for authorized milestone bound
 
 ## Current overview
 
-| Feature or milestone                       | Status                             | Remaining work                                            |
-| ------------------------------------------ | ---------------------------------- | --------------------------------------------------------- |
-| Project scaffold and repository foundation | Implemented                        | Verify on the target Node.js 24 runtime.                  |
-| Public homepage and design refresh         | Implemented; user review completed | Explicit mobile viewport verification remains unrecorded. |
-| Couple login, sessions, and logout         | Implemented; user review completed | Node.js 24 and Vercel packaging verification.             |
-| Public couple signup                       | Implemented; user review completed | Email verification and password recovery are deferred.    |
-| Login design refresh                       | Implemented; user review completed | Explicit mobile viewport verification remains unrecorded. |
-| Wedding setup and ceremony seeding         | Implemented; user review completed | Explicit mobile viewport and Node.js 24 verification.     |
+| Feature or milestone                             | Status                             | Remaining work                                                    |
+| ------------------------------------------------ | ---------------------------------- | ----------------------------------------------------------------- |
+| Project scaffold and repository foundation       | Implemented                        | Verify on the target Node.js 24 runtime.                          |
+| Public homepage and design refresh               | Implemented; user review completed | Explicit mobile viewport verification remains unrecorded.         |
+| Couple login, sessions, and logout               | Implemented; user review completed | Node.js 24 and Vercel packaging verification.                     |
+| Public couple signup                             | Implemented; user review completed | Email verification and password recovery are deferred.            |
+| Login design refresh                             | Implemented; user review completed | Explicit mobile viewport verification remains unrecorded.         |
+| Wedding setup and ceremony seeding               | Implemented; user review completed | Explicit mobile viewport and Node.js 24 verification.             |
+| Existing ceremony editing and publishing         | Implemented; user review completed | Explicit viewport and Node.js 24 verification.                    |
+| Add and delete ceremonies                        | Implemented; user review completed | Desktop/mobile interaction review and Node.js 24 verification.    |
+| Family management and ceremony assignments       | Implemented; user review completed | Explicit viewport and Node.js 24 verification.                    |
+| Optional invitation email contact                | Implemented; user review completed | Real delivery requires sender/public URL configuration.           |
+| Secure invitations and individual email workflow | Implemented; user review completed | Sender/public HTTPS configuration and real delivery verification. |
 
-Couple signup, authentication, supporting persistence, and signup/login/session/logout APIs are implemented. Development database connection and index setup are verified. The user confirmed completion of code review and page-flow checks on 27 October 2026. Wedding setup and six draft ceremony seeds are implemented. Ceremony editing, other planning features, guest authentication and external integrations remain deferred; future milestones require user authorization.
+Couple signup, authentication, supporting persistence, and signup/login/session/logout APIs are implemented. Development database connection and index setup are verified. The user confirmed completion of code review and page-flow checks on 27 October 2026. Wedding setup and six draft ceremony seeds are implemented. Existing ceremony editing and publishing are implemented. Custom ceremony creation and versioned deletion are now implemented. Family management and ceremony assignments are now implemented. Secure invitation links, restricted guest sessions and individual invitation email workflows are implemented. Live delivery requires configuration and a real-recipient verification; RSVP submission and other planning/external features remain deferred.
 
-## Latest review checkpoint (28 October 2026)
+## Latest review checkpoint (29 October 2026)
+
+- The user accepted the current ceremony, family, optional email-contact and secure invitation features and authorized committing and pushing the changes to GitHub.
+- Pre-commit verification repeated on 29 October 2026: formatting, lint, typecheck, production build and all 69 tests passed (16 invitation/provider-fixture, 14 family, 14 ceremony, eight wedding, ten authentication, six security/unit and one built-app HTTP test). Tests used disposable local data with no real emails. The sandboxed build encountered generated-directory EPERM; the same build passed outside the sandbox without source changes.
+- This acceptance supersedes pending user-review notes in the historical delivery records below. Explicit desktop/mobile viewport coverage, Node.js 24/Vercel verification and real email delivery remain separate follow-ups.
+- Live email delivery remains disabled pending verified sender/public HTTPS configuration and a separately authorized recipient test. This checkpoint does not enable sending, provision services or authorize deployment.
+- Next feature: agree and authorize its scope in the [implementation plan](implementation-plan.md) before implementation.
+
+## Previous review checkpoint (28 October 2026)
 
 - The user confirmed that the wedding setup feature looks good and approved committing and pushing the milestone to GitHub.
 - Wedding setup, saved overview/editing, and six private draft ceremony seeds are accepted for this milestone. Delivered scope and automated verification are recorded in the wedding setup section below.
@@ -115,3 +128,65 @@ See [implementation plan](implementation-plan.md#wedding-setup-milestone-27-octo
 Wedding setup verification: eight setup tests, ten authentication integration tests, six security/unit tests and one expanded built-app HTTP test passed. Coverage includes real draft resume, completion/overview, saved edits, concurrent/stale updates, missing indexes, transactional rollback and tenant isolation. Format:check, lint, typecheck and production build passed. Applied non-destructive application indexes to the configured isolated development database; no account or wedding records were created there. The browser could not reach the isolated fixture server, so interactive desktop/mobile visual review remains pending. The fixture session was interrupted after that attempt.
 
 Final build follow-up: Windows/OneDrive intermittently denied generated .next directory creation. The production build passed with local generated-directory preparation; no source compiler workaround was added. Ordinary npm run build had also passed earlier. Keep this environment limitation separate from the unperformed interactive visual review.
+
+## Existing ceremony editing and publishing (28 October 2026)
+
+Implemented; automated verification passed; interactive visual review pending. Added the approved responsive ceremony list/editor, saved status filtering, IST display/input, draft saves, publication validation, save feedback, stale-write recovery and confirmed move-to-draft preserving saved details. Wedding overview now links to management and reflects actual event details.
+
+Implemented private GET /api/events and GET/PATCH /api/events/[id] with tenant ownership, strict fields and atomic version checks. No creation/deletion, invitations or external integrations. See [implementation plan](implementation-plan.md#existing-ceremony-editing-and-publishing-28-october-2026) for API boundaries and design adaptations.
+
+Ceremony verification: eight isolated MongoDB/API ceremony tests, eight wedding-setup regression tests and one expanded built-app HTTP test passed. Formatting, lint, typecheck and ordinary npm run build passed without a new output-directory workaround. Covered IST boundaries, draft clearing, publication invariants, preserve-on-unpublish, concurrent/stale writes, ownership, request validation, private pages and unsupported create/delete methods. Interactive desktop/mobile browser review and target Node.js 24 verification remain pending; these were not performed for this milestone. No development records, schema migrations, deployments, commits or pushes were created.
+
+## Add and delete ceremonies (28 October 2026)
+
+Implemented; automated verification passed; interactive desktop/mobile review pending. Fetched the approved Stitch management design and built its card grid, custom draft creation, existing custom editor support, permanent deletion confirmation, session/error feedback, stale-record review and already-deleted recovery. Presets remain first and custom ceremonies follow creation order. Updated setup overview ordering and retained all prior edit/publication behavior.
+
+POST creation is tenant-scoped and retry-safe while the record exists. DELETE is version-checked and transactional: invitation/RSVP cleanup, preserved but unlinked task/expense records, and event deletion commit together. See [implementation plan](implementation-plan.md#add-and-delete-ceremonies-28-october-2026) for exact contracts, idempotency lifetime, future reference-writer coordination and deferred modules.
+
+Verification: format:check, lint, typecheck and ordinary npm run build passed. All 14 ceremony/API tests, eight wedding-setup regressions and the expanded production HTTP test passed against disposable real MongoDB replica sets. Coverage includes creation replay/concurrency, custom editing/publication, preset deletion without reseeding, tenant isolation, edit/delete races, cleanup rollback, strict request validation and end-to-end creation/deletion. The HTTP check caught an empty-stream DELETE handling failure; fixed it and reran the build, ceremony tests and HTTP suite successfully.
+
+Applied the required non-destructive creation index to the configured development database using npm run db:indexes; no application records were created or deleted there for verification. Restart the development server to reload cached Mongoose models. No new dependencies, external services, commits, pushes or deployment. Interactive browser review remains pending because the isolated fixture server was inaccessible to the browser; automated HTTP checks do not establish visual correctness. Host verification used Node.js 22.11.0; required Node.js 24 verification remains pending.
+
+Next: user review of the ceremony management flow on desktop/mobile, then agree a bounded family-management milestone before further feature development. No invitation dispatch, RSVP UI, task/expense UI or guest access was implemented.
+
+## Family management and ceremony assignments (28 October 2026)
+
+Implemented; automated verification passed; user and desktop/mobile interaction review pending. Fetched the approved desktop/mobile Stitch designs and built the responsive family directory, real totals, literal name/email search, ceremony filtering, pagination, family creation, separate detail/assignment saving, removal confirmations, permanent deletion and conflict/session/error recovery. The workspace links to Manage families. No invitation links, outbound invitation actions or guest/RSVP submission screens were added.
+
+Persistence uses families and the reference eventInvitations collection with tenant-derived ownership and explicit safe DTOs. Transactional assignment changes coordinate with ceremony deletion, retain existing responses and validate confirmed attendance limits. Ceremony deletion now removes canonical assignments and advances affected family revisions. See [implementation plan](implementation-plan.md#family-management-and-ceremony-assignments-28-october-2026) for contracts, UI adaptations, retry limits and future coordination boundaries.
+
+Verification: formatting, lint, typecheck, ordinary production build, all 12 family/API tests, 14 ceremony regressions, eight wedding regressions and the expanded built-app HTTP test passed. Tests cover tenant isolation, validation, optional/draft assignments, literal search/pagination, stale/concurrent changes, response preservation/removal confirmation, count conflicts, session cleanup, assignment/deletion races, transaction rollback and missing-index failure. HTTP coverage includes authenticated list/add/edit pages, family create/update, assignment replacement and bodyless version-checked deletion. Initial integration startup was blocked by sandbox loopback EACCES; the retry after network permission passed. Fixtures used disposable local MongoDB replica sets, never the configured development records.
+
+Applied required family/assignment indexes through npm run db:indexes against the configured development database, without dropping indexes or changing application records. Browser inspection was attempted against a temporary isolated production fixture, but the in-app browser timed out reaching its loopback URL. The fixture then completed and stopped. Interactive desktop/mobile visual correctness remains unverified. The host runs Node.js 22.11.0; target Node.js 24 verification remains pending. No new dependencies, secrets, external services, commits, pushes or deployment. Restart the existing development server to reload model changes before user review.
+
+Next: review family creation, details, assignments and deletion, then agree the secure invitation-link and guest invitation-page milestone. Event-wise RSVP remains a later milestone.
+
+Family milestone final build follow-up: the last sandboxed build rerun encountered the existing Windows/OneDrive EPERM error creating a generated .next/server/app/signup directory. The same npm run build command passed outside the sandbox, without source/compiler workarounds. Earlier ordinary builds also passed during this milestone. Keep this intermittent generated-directory permission issue separate from application/compiler failures and pending visual review.
+
+## Email-only family contact update (28 October 2026)
+
+Implemented optional invitation-email contacts across the family form, list, literal search, validation, database schema and safe DTOs. Removed the previous required messaging contact from the current contract. Addresses are validated, trimmed/lowercased and clearable; existing records without email remain usable and no live contact data is deleted. Updated homepage wording, README, repository guidance, environment-example comments and the four reference documents at the user's explicit request. See [implementation plan](implementation-plan.md#email-only-invitation-direction-28-october-2026) for the superseding product decision and compatibility boundaries.
+
+Email delivery, secure-link generation/rotation, guest invitation access and send/resend actions remain unimplemented. No real emails, database migrations, external provisioning, new dependencies, commits, pushes or deployment. Verification passed: npm run format:check, npm run lint, npm run typecheck, ordinary npm run build, all 13 isolated family/API tests and the expanded built-app HTTP regression. Coverage includes optional/malformed email, normalization, clearing, email search, existing records without email and preservation of prior stored fields. A repository text search found no remaining references to the retired invitation channel. Tests used disposable local MongoDB data; no real emails were sent. Explicit visual review and target Node.js 24 verification remain pending. Restart the development server to reload the model before review.
+
+## Save family cache recovery (28 October 2026)
+
+Implemented; automated verification passed; user retry pending. Investigated the reported Save family availability error. The configured development database and required assignment index passed read-only checks. Reproduced an outdated compiled family schema rejecting the email field after a development reload, then added development-only model recompilation and a regression test. Stored records and indexes are unchanged; production caching is unchanged. The original running server exception was unavailable, so user retry confirmation remains pending. See [implementation plan](implementation-plan.md#family-save-development-cache-fix-28-october-2026) for the scope and diagnostic limits. Email sending is still unimplemented.
+
+Cache-recovery verification: formatting, lint, typecheck, ordinary production build and all 14 isolated family/API tests passed. The outdated-schema regression failed before the fix and passed afterward. The final built-app HTTP regression also passed, including family creation, email rendering/search, editing, assignment changes and deletion against disposable data. No live family records or outbound emails were created during diagnosis. Target Node.js 24 and interactive user retry remain unverified.
+
+## Secure invitations and individual email workflow (28 October 2026)
+
+Implemented; automated verification passed; user UI review and live delivery verification pending. Added Manage invitation from the family directory/editor, private link generation/replacement/copy, couple preview, personalized email preview, explicit send confirmation, accepted/failed/uncertain feedback and deliberate resend/retry. Added the public fragment-token landing page, separate restricted guest session and read-only personalized invitation showing only assigned published ceremonies. No RSVP submission or external gallery/maps/livestream actions were added.
+
+See [implementation plan](implementation-plan.md#secure-family-invitations-and-individual-email-sends-28-october-2026) for exact API contracts, fragment URL adaptation, session/token boundaries, transaction coordination, one-recipient Resend adapter, immutable send records, duplicate prevention and retry limits. No new dependencies or SDK were installed. Saving a family never sends an email.
+
+Verification completed so far: all 16 invitation tests, 14 family tests, 14 ceremony regressions, ten authentication tests and eight wedding regressions passed against disposable local MongoDB replica sets. The provider adapter was tested against a local HTTP fixture; no real emails were sent. Tests cover hidden plaintext tokens, cookie/kind separation, expiry/revocation, published-assignment visibility, tenant isolation, snapshot validation, one-winner sends, same-key failed/uncertain retries, crashed-caller lease recovery, resend confirmation and throttling. Typecheck/lint/format and ordinary production builds passed earlier; final build/HTTP results follow below. One HTTP fixture initially expected a published ceremony that an earlier test had intentionally moved to draft; corrected the fixture to publish before checking guest visibility.
+
+Applied required invitation indexes to the configured development database through npm run db:indexes without changing application records. Checked the saved .env.local using presence/validity flags only: it still has database/auth settings only, no RESEND_API_KEY, valid EMAIL_FROM or invitation enable flag, and uses a local APP_ORIGIN. Live Resend credentials, domain verification and actual inbox delivery therefore remain unverified and disabled. The implementation does not provision a sender or deploy a public app URL.
+
+Remaining review: desktop/mobile UI interaction and the target Node.js 24 runtime (host is 22.11.0). Browser visual review was not performed for this milestone; the prior isolated-server browser connectivity limitation remains. No real family/invitation fixtures, outbound emails, commits, pushes or deployment. Next: complete private email configuration and public URL setup, user UI review and a separately authorized single-recipient delivery test; then plan event-wise RSVP.
+
+Final invitation verification: format:check, lint, typecheck and production build passed. All 63 tests passed: 16 invitation/provider-fixture cases, 14 family cases, 14 ceremony cases, ten authentication cases, eight wedding cases and the expanded built-app HTTP regression. HTTP checks cover the management/guest pages, fragment-link generation and exchange, restricted cookies/DTOs, disabled live sending, replacement revocation and family deletion. The final build hit the existing Windows/OneDrive EPERM error creating generated invite segment directories inside the sandbox; the identical build passed outside the sandbox without changing source/compiler settings. Earlier ordinary builds also passed. The final saved-environment check still reported no email key/sender/enable flag and no public HTTPS origin; real provider authentication/domain/inbox verification remains pending. No real recipient message or deployment was performed.
+
+Configuration follow-up (28 October 2026): the saved environment now contains an API key and a syntactically valid plain sender mailbox. Invitation sending remains disabled and APP_ORIGIN remains local, so live delivery is still blocked by configuration. A read-only Resend domain request returned HTTP 401 with restricted_api_key; this does not establish an invalid sending key and did not verify the sender domain. No secrets were printed, configuration values changed, or emails sent. A real public HTTPS app URL and verified sender remain prerequisites before enabling delivery. No application code changed during this diagnosis.

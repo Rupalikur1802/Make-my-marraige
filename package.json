@@ -19,7 +19,10 @@
     "account:provision": "node --conditions=react-server --import tsx scripts/operator.ts provision",
     "test:auth:unit": "node --conditions=react-server --import tsx --test tests/auth-unit.test.ts",
     "test:auth:http": "node --conditions=react-server --import tsx --test tests/auth-http.test.ts",
-    "test:wedding": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/wedding.test.ts"
+    "test:wedding": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/wedding.test.ts",
+    "test:events": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/events.test.ts",
+    "test:families": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/families.test.ts",
+    "test:invitations": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/invitations.test.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.2",
