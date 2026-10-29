@@ -9,6 +9,7 @@ import { throttleLogin } from "./rate-limit.server";
 import { loginSchema, SESSION_SECONDS } from "./validation";
 import { AuthError } from "./errors";
 import { requireAuthIndexes } from "./indexes.server";
+import { loginDependency } from "./diagnostics.server";
 
 const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 export const tokenDigest = (token: string) =>
@@ -17,23 +18,37 @@ export async function loginCouple(input: unknown, network: string) {
   appOrigin();
   rateLimitSecret();
   const { email, password } = loginSchema.parse(input);
-  const connection = await connectDatabase();
-  await requireAuthIndexes(connection);
-  await throttleLogin(connection, email, network);
+  const connection = await loginDependency(
+    "database_connection",
+    connectDatabase,
+  );
+  await loginDependency("authentication_indexes", () =>
+    requireAuthIndexes(connection),
+  );
+  await loginDependency("rate_limit", () =>
+    throttleLogin(connection, email, network),
+  );
   const { Account, Session } = authModels(connection);
-  const account = await Account.findOne({ emailNormalized: email })
-    .select("+passwordHash")
-    .lean();
-  if (!(await verifyPassword(account?.passwordHash, password)) || !account) {
+  const account = await loginDependency("account_lookup", async () =>
+    Account.findOne({ emailNormalized: email }).select("+passwordHash").lean(),
+  );
+  if (
+    !(await loginDependency("password_verification", () =>
+      verifyPassword(account?.passwordHash, password),
+    )) ||
+    !account
+  ) {
     throw new AuthError(
       "INVALID_CREDENTIALS",
       401,
       "The email or password is incorrect.",
     );
   }
-  const wedding = await weddingModel(connection)
-    .findOne({ _id: account.weddingId, ownerAccountId: account._id })
-    .lean();
+  const wedding = await loginDependency("wedding_lookup", async () =>
+    weddingModel(connection)
+      .findOne({ _id: account.weddingId, ownerAccountId: account._id })
+      .lean(),
+  );
   if (!wedding)
     throw new AuthError(
       "INVALID_CREDENTIALS",
@@ -42,14 +57,16 @@ export async function loginCouple(input: unknown, network: string) {
     );
   const token = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + SESSION_SECONDS * 1000);
-  await Session.create({
-    kind: "couple",
-    tokenHash: tokenDigest(token),
-    accountId: account._id,
-    weddingId: wedding._id,
-    authVersion: account.authVersion,
-    expiresAt,
-  });
+  await loginDependency("session_creation", async () =>
+    Session.create({
+      kind: "couple",
+      tokenHash: tokenDigest(token),
+      accountId: account._id,
+      weddingId: wedding._id,
+      authVersion: account.authVersion,
+      expiresAt,
+    }),
+  );
   return {
     token,
     data: {

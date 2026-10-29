@@ -9,6 +9,7 @@ import {
 } from "@/lib/config.server";
 import { AuthError } from "./errors";
 import { SESSION_SECONDS } from "./validation";
+import { LoginDependencyError } from "./diagnostics.server";
 
 const privateHeaders = {
   "Cache-Control": "private, no-store",
@@ -41,6 +42,7 @@ export function authFailure(error: unknown, requestId: string) {
         code,
         operation: "couple-auth",
         configuration: error instanceof ConfigurationError,
+        stage: error instanceof LoginDependencyError ? error.stage : "unknown",
       }),
     );
   return NextResponse.json(

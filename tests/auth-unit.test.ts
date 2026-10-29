@@ -15,6 +15,45 @@ import {
 import { POST as login } from "../src/app/api/auth/login/route";
 import { POST as logout } from "../src/app/api/auth/logout/route";
 import { GET as session } from "../src/app/api/auth/session/route";
+import { loginDependency } from "../src/modules/auth/diagnostics.server";
+import { authFailure } from "../src/modules/auth/http.server";
+import { AuthError } from "../src/modules/auth/errors";
+
+test("login dependency logs identify the failing stage without exposing raw errors", async () => {
+  const logs: string[] = [];
+  const original = console.error;
+  console.error = (value: string) => logs.push(value);
+  try {
+    for (const stage of [
+      "database_connection",
+      "authentication_indexes",
+      "password_verification",
+    ] as const) {
+      try {
+        await loginDependency(stage, async () => {
+          throw new Error("mongodb://private-secret@example.test");
+        });
+        assert.fail("Expected a dependency failure");
+      } catch (error) {
+        const response = authFailure(error, "test-request");
+        assert.equal(response.status, 503);
+        assert.equal(JSON.parse(logs.at(-1)!).stage, stage);
+        assert.equal(logs.at(-1)!.includes("private-secret"), false);
+        assert.equal((await response.text()).includes(stage), false);
+      }
+    }
+    const expected = new AuthError("RATE_LIMITED", 429, "Try later.");
+    await assert.rejects(
+      loginDependency("rate_limit", async () => {
+        throw expected;
+      }),
+      (error) => error === expected,
+    );
+    assert.equal(await loginDependency("account_lookup", async () => 42), 42);
+  } finally {
+    console.error = original;
+  }
+});
 
 process.env.APP_ORIGIN = "http://localhost:3000";
 function request(
