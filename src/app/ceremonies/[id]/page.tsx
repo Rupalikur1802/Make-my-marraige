@@ -5,14 +5,11 @@ import { pageCouple } from "@/modules/wedding/page-actor.server";
 import { getWedding } from "@/modules/wedding/service.server";
 import { getCeremony } from "@/modules/events/service.server";
 import { AuthError } from "@/modules/auth/errors";
-import {
-  WeddingHeader,
-  WeddingFooter,
-  WeddingUnavailable,
-} from "@/app/wedding/setup/shared";
+import { WeddingUnavailable } from "@/app/wedding/setup/shared";
 import { RetryCeremonies } from "../retry";
 import { CeremonyEditor } from "./editor";
 import styles from "../ceremonies.module.css";
+import { WeddingFrame } from "@/app/workspace/frame";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -42,11 +39,10 @@ export default async function EditCeremonyPage({
   }
   if (missing) notFound();
   return (
-    <div className={styles.page}>
+    <WeddingFrame email={actor.account.email}>
       <a className="skip-link" href="#editor-content">
         Skip to ceremony editor
       </a>
-      <WeddingHeader email={actor.account.email} />
       <main className={styles.main} id="editor-content">
         {event ? (
           <CeremonyEditor initial={event} />
@@ -59,7 +55,6 @@ export default async function EditCeremonyPage({
           </div>
         )}
       </main>
-      <WeddingFooter />
-    </div>
+    </WeddingFrame>
   );
 }

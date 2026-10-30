@@ -1,10 +1,11 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { pageCouple } from "@/modules/wedding/page-actor.server";
 import { listFamilies } from "@/modules/families/service.server";
 import { listCeremonies } from "@/modules/events/service.server";
 import { FamilyRows } from "./rows";
 import { RetryFamilies } from "./retry";
 import styles from "./families.module.css";
+import { InvitationDirectory } from "./invitation-directory";
 export default async function FamiliesPage({
   searchParams,
 }: {
@@ -13,11 +14,14 @@ export default async function FamiliesPage({
   const actor = await pageCouple();
   if (!actor) return null;
   const params = await searchParams;
+  if (params.section === "invitations")
+    return <InvitationDirectory params={params} />;
   const query = Object.fromEntries(
     Object.entries(params).filter(
       ([key, value]) =>
         key !== "deleted" &&
         key !== "saved" &&
+        key !== "section" &&
         !(key === "eventId" && value === ""),
     ),
   );
@@ -54,7 +58,7 @@ export default async function FamiliesPage({
       <div className={styles.intro}>
         <div>
           <p className={styles.eyebrow}>Directory · Household records</p>
-          <h1>Families</h1>
+          <h1>Guests</h1>
           <p>
             Organise your families and choose the ceremonies they’re invited to.
           </p>
@@ -63,6 +67,11 @@ export default async function FamiliesPage({
           ＋ Add family
         </Link>
       </div>
+      <p className={styles.notice}>
+        <Link href="/attendance">
+          View ceremony attendance and guest responses →
+        </Link>
+      </p>
       {params.deleted === "1" && (
         <p role="status" className={styles.success}>
           Family deleted. Other families and ceremonies remain unchanged.
@@ -145,9 +154,9 @@ export default async function FamiliesPage({
         )}
       </div>
       <p className={styles.notice}>
-        Family records and ceremony assignments only. Saving does not send
-        invitation emails. Choose Manage invitation to generate a private link,
-        preview it, and explicitly confirm an email send.
+        Manage guest details, ceremony assignments and attendance here. Saving
+        does not send invitation emails. Open Invitation in the sidebar to
+        manage private links, previews and individual email sends.
       </p>
     </>
   );

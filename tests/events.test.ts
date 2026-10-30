@@ -415,6 +415,11 @@ test("deletion removes only owned assignments, preserves spending/tasks and adva
     weddingId: tenant,
     eventId,
     amountPaise: 12500,
+    description: "Recorded ceremony payment",
+    spentOn: "2026-10-01",
+    payerName: "Groom",
+    payerKey: "groom",
+    idempotencyKey: randomUUID(),
     createPayloadHash: "keep-hash",
     version: 4,
   });

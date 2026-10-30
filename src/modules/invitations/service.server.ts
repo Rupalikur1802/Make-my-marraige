@@ -590,6 +590,33 @@ export async function acceptGuestInvitation(
 ) {
   return guestInvitationAction(token, now, true);
 }
+export async function resolveGuestSession(
+  token: string | undefined,
+  session: ClientSession,
+  now = new Date(),
+) {
+  if (!token || !invitationTokenSchema.safeParse(token).success)
+    throw new AuthError(
+      "UNAUTHENTICATED",
+      401,
+      "Reopen your invitation link to continue.",
+    );
+  const saved = await invitationModels(await connectDatabase())
+    .GuestSession.findOne({
+      kind: "guest",
+      tokenHash: tokenDigest(token),
+      expiresAt: { $gt: now },
+    })
+    .session(session)
+    .lean();
+  if (!saved)
+    throw new AuthError(
+      "UNAUTHENTICATED",
+      401,
+      "Reopen your invitation link to continue.",
+    );
+  return saved;
+}
 async function guestInvitationAction(
   token: string | undefined,
   now: Date,
@@ -604,20 +631,7 @@ async function guestInvitationAction(
   const c = await connectDatabase();
   await requireInvitationIndexes(c);
   return c.transaction(async (session) => {
-    const saved = await invitationModels(c)
-      .GuestSession.findOne({
-        kind: "guest",
-        tokenHash: tokenDigest(token),
-        expiresAt: { $gt: now },
-      })
-      .session(session)
-      .lean();
-    if (!saved)
-      throw new AuthError(
-        "UNAUTHENTICATED",
-        401,
-        "Reopen your invitation link to continue.",
-      );
+    const saved = await resolveGuestSession(token, session, now);
     const family = await familyModels(c)
       .Family.findOne({
         _id: saved.familyId,
@@ -629,6 +643,23 @@ async function guestInvitationAction(
       .lean();
     if (!family) throw invalid();
     const invitation = await view(saved.weddingId, saved.familyId, session);
+    const responses = await familyModels(c)
+      .Invitation.find({ weddingId: saved.weddingId, familyId: saved.familyId })
+      .session(session)
+      .lean();
+    invitation.events = invitation.events.map((event) => {
+      const row = responses.find((row) => row.eventId.toString() === event.id)!;
+      return {
+        ...event,
+        invitation: {
+          id: row._id.toString(),
+          status: row.status,
+          attendingCount: row.attendingCount,
+          respondedAt: row.respondedAt?.toISOString() ?? null,
+          version: row.version,
+        },
+      };
+    });
     if (accept && !family.invitationAcceptedAt) {
       const updated = await familyModels(c).Family.updateOne(
         {

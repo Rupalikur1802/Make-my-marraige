@@ -553,12 +553,12 @@ export default function HomePage() {
                 <p className="eyebrow">Memories</p>
                 <h3>Keep memories together</h3>
                 <p>
-                  Give guests one shared OneDrive folder to view and add wedding
+                  Give guests one shared wedding gallery to view and add wedding
                   photos.
                 </p>
                 <div className="detail-example">
                   <strong>Arjun &amp; Priya’s wedding album</strong>
-                  <span>Sample folder · Access managed in OneDrive</span>
+                  <span>Sample photos · Access managed by the couple</span>
                 </div>
               </article>
             </div>

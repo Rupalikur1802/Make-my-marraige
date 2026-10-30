@@ -36,6 +36,8 @@ import {
   acceptGuestInvitation,
 } from "../src/modules/invitations/service.server";
 import { invitationModels } from "../src/modules/invitations/model.server";
+import { invitationDirectory } from "../src/modules/invitations/directory.server";
+import { familyModels } from "../src/modules/families/model.server";
 import {
   sendViaResend,
   deliverySettings,
@@ -867,5 +869,109 @@ test("invalid token guessing is throttled without disclosing family existence", 
   await assert.rejects(
     exchangeInvitation(token, "invalid-test"),
     code("RATE_LIMITED"),
+  );
+});
+
+test("invitation directory separates submission and acceptance, filters before pagination and excludes foreign attempts", async () => {
+  const f = await fixture(),
+    other = await fixture();
+  await createFamily(f.auth.data, {
+    name: "Unsent Household",
+    invitedCount: 2,
+    eventIds: [],
+  });
+  let directory = await invitationDirectory(f.auth.data);
+  assert.equal(directory.total, 2);
+  assert.ok(directory.rows.every((row) => row.emailStatus === "notSent"));
+  const attempt = await prepare(f);
+  await sendInvitationEmail(
+    f.auth.data,
+    f.family.id,
+    { attemptId: attempt.id, token: f.token },
+    accepted,
+  );
+  directory = await invitationDirectory(f.auth.data, {
+    emailStatus: "submitted",
+    acceptance: "awaiting",
+    pageSize: 1,
+  });
+  assert.equal(directory.total, 1);
+  assert.equal(directory.rows[0]!.name, "Invited Family");
+  assert.ok(directory.rows[0]!.submittedAt);
+  assert.equal(directory.rows[0]!.invitationAcceptedAt, null);
+  const guest = await exchangeInvitation(f.token, "directory-test");
+  await acceptGuestInvitation(guest.token);
+  assert.equal(
+    (await invitationDirectory(f.auth.data, { acceptance: "accepted" })).total,
+    1,
+  );
+  assert.equal(
+    (await invitationDirectory(f.auth.data, { emailStatus: "notSent" })).total,
+    1,
+  );
+  assert.equal((await invitationDirectory(f.auth.data, { q: ".*" })).total, 0);
+  assert.equal(
+    (await invitationDirectory(f.auth.data, { q: "recipient@example.test" }))
+      .total,
+    1,
+  );
+  assert.equal(
+    (await invitationDirectory(other.auth.data, { emailStatus: "submitted" }))
+      .total,
+    0,
+  );
+  assert.doesNotMatch(
+    JSON.stringify(directory),
+    /snapshot|providerId|tokenHash|keyHash|payloadHash/,
+  );
+  const c = await connectDatabase();
+  await familyModels(c).Family.updateOne(
+    { _id: other.family.id },
+    { $set: { emailAttemptId: attempt.id } },
+  );
+  assert.equal(
+    (await invitationDirectory(other.auth.data)).rows[0]!.emailStatus,
+    "notSent",
+  );
+  await assert.rejects(
+    invitationDirectory(f.auth.data, { emailStatus: "delivered" }),
+  );
+});
+
+test("directory reports expired submission leases as uncertain and reflects status changes without sending", async () => {
+  const f = await fixture(),
+    prepared = await prepare(f),
+    c = await connectDatabase();
+  const { EmailAttempt } = invitationModels(c);
+  for (const status of ["failed", "uncertain"] as const) {
+    await EmailAttempt.updateOne({ _id: prepared.id }, { $set: { status } });
+    assert.equal(
+      (await invitationDirectory(f.auth.data, { emailStatus: status })).total,
+      1,
+    );
+  }
+  await EmailAttempt.updateOne(
+    { _id: prepared.id },
+    { $set: { status: "sending", leaseUntil: new Date(Date.now() - 1000) } },
+  );
+  assert.equal(
+    (await invitationDirectory(f.auth.data)).rows[0]!.emailStatus,
+    "uncertain",
+  );
+  await EmailAttempt.updateOne(
+    { _id: prepared.id },
+    { $set: { leaseUntil: new Date(Date.now() + 60000) } },
+  );
+  assert.equal(
+    (await invitationDirectory(f.auth.data)).rows[0]!.emailStatus,
+    "sending",
+  );
+  await familyModels(c).Family.updateOne(
+    { _id: f.family.id },
+    { $inc: { tokenVersion: 1 } },
+  );
+  assert.equal(
+    (await invitationDirectory(f.auth.data)).rows[0]!.previousLink,
+    true,
   );
 });

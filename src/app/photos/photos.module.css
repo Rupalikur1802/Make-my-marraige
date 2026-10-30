@@ -1,0 +1,458 @@
+.main {
+  max-width: 1440px;
+  margin: auto;
+  padding: 44px 48px 70px;
+  color: #212520;
+}
+.main h1,
+.main h2,
+.dialog h2 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+}
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.intro h1 {
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+  letter-spacing: -0.035em;
+  margin: 8px 0 12px;
+}
+.intro p {
+  color: #5f6359;
+  margin: 0;
+  line-height: 1.7;
+}
+.intro .eyebrow {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #806b49;
+  font-weight: 600;
+}
+.main button,
+.dialog button {
+  border: 1px solid #e2ddd4;
+  background: #f4f1ea;
+  color: #313c2f;
+  padding: 12px 18px;
+  border-radius: 7px;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.main button:focus-visible,
+.dialog button:focus-visible,
+.back:focus-visible {
+  outline: 3px solid #a28c69;
+  outline-offset: 4px;
+}
+.main button:disabled,
+.dialog button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.main .primary,
+.dialog .primary {
+  background: #313c2f;
+  color: white;
+  border-color: #313c2f;
+}
+.access {
+  background: white;
+  border: 1px solid #e2ddd4;
+  border-radius: 12px;
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 36px;
+}
+.access > div {
+  flex: 1;
+}
+.access h2 {
+  font-size: 1.6rem;
+  margin: 0 0 12px;
+}
+.access p {
+  margin: 0 0 10px;
+  color: #5f6359;
+  line-height: 1.6;
+}
+.access small {
+  color: #5f6359;
+  line-height: 1.6;
+}
+.saved {
+  font:
+    600 0.7rem var(--font-sans),
+    sans-serif;
+  background: #eff0e7;
+  color: #59644e;
+  padding: 4px 9px;
+  border-radius: 20px;
+  margin-left: 8px;
+}
+.main .switch {
+  width: 54px;
+  min-width: 54px;
+  height: 32px;
+  min-height: 32px;
+  border-radius: 24px;
+  padding: 3px;
+  background: #85897f;
+  border: 0;
+}
+.switch span {
+  display: block;
+  background: white;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+.main .switch[aria-checked="true"] {
+  background: #313c2f;
+}
+.switch[aria-checked="true"] span {
+  margin-left: 22px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.photo {
+  overflow: hidden;
+  background: white;
+  border: 1px solid #e2ddd4;
+  border-radius: 12px;
+}
+.main .photoButton {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: #ecece3;
+  overflow: hidden;
+}
+.photoButton img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 1;
+}
+.photoButton > span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  color: #5f6359;
+}
+.caption {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 8px;
+}
+.caption > div {
+  min-width: 0;
+  flex: 1;
+}
+.caption h2 {
+  font:
+    500 0.9rem var(--font-sans),
+    sans-serif;
+  margin: 0 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.caption p {
+  font-size: 0.75rem;
+  color: #5f6359;
+  margin: 0;
+  line-height: 1.6;
+}
+.caption button {
+  padding: 8px 12px;
+  background: white;
+  border: 0;
+}
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+.notice,
+.empty {
+  border: 1px solid #e2ddd4;
+  background: #f7f4ee;
+  padding: 32px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.notice h2 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+.notice p {
+  line-height: 1.7;
+}
+.notice a {
+  display: inline-block;
+  margin-left: 16px;
+}
+.empty {
+  text-align: center;
+  padding: 72px 24px;
+}
+.empty > span {
+  font-size: 3rem;
+  color: #a28c69;
+}
+.empty h2 {
+  font-size: 2rem;
+}
+.empty p {
+  color: #5f6359;
+  line-height: 1.7;
+}
+.back {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: #313c2f;
+}
+.dialog {
+  background: #faf8f5;
+  color: #212520;
+  border: 1px solid #e2ddd4;
+  border-radius: 14px;
+  padding: 28px;
+  width: min(620px, calc(100vw - 32px));
+  max-height: 90dvh;
+  overflow: auto;
+  box-sizing: border-box;
+}
+.dialog::backdrop {
+  background: rgb(20 24 20 / 65%);
+}
+.modalHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.modalHeading h2 {
+  font-size: 2rem;
+  margin: 0;
+}
+.dialog .modalHeading button {
+  padding: 5px 14px;
+  font-size: 1.5rem;
+}
+.drop {
+  border: 1px dashed #a28c69;
+  background: #f4f1ea;
+  padding: 28px;
+  text-align: center;
+  border-radius: 10px;
+}
+.drop > span {
+  font-size: 2rem;
+  color: #806b49;
+}
+.drop small {
+  display: block;
+  color: #5f6359;
+  line-height: 1.7;
+  margin-top: 16px;
+}
+.queue {
+  padding: 0;
+  list-style: none;
+}
+.queue li {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  border-bottom: 1px solid #e2ddd4;
+  padding: 16px 0;
+}
+.queue li > div {
+  flex: 1;
+  min-width: 0;
+}
+.queue img {
+  object-fit: cover;
+  border-radius: 6px;
+}
+.queue strong {
+  display: block;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+.queue small {
+  color: #5f6359;
+  font-size: 0.75rem;
+}
+.queue p {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+.queue progress {
+  width: 100%;
+  accent-color: #313c2f;
+  margin-top: 8px;
+}
+.help {
+  font-size: 0.8rem;
+  color: #5f6359;
+  line-height: 1.7;
+}
+.actions {
+  display: flex;
+  justify-content: end;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.dialog.viewer {
+  width: min(1100px, calc(100vw - 24px));
+  background: #212520;
+  color: #faf8f5;
+}
+.viewerImage {
+  height: min(65dvh, 700px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.viewerImage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.viewerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.viewerActions p {
+  font-size: 0.8rem;
+  text-align: center;
+}
+.viewer > p {
+  overflow-wrap: anywhere;
+}
+.dialog .danger {
+  background: #813e32;
+  color: white;
+  border-color: #813e32;
+}
+.deletePreview {
+  display: block;
+  width: 180px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.dialog > p {
+  line-height: 1.7;
+}
+.skeleton {
+  aspect-ratio: 1;
+  background: #eeebe4;
+  border-radius: 12px;
+}
+@media (max-width: 1100px) {
+  .main {
+    padding: 32px 24px 56px;
+  }
+  .grid {
+    gap: 16px;
+  }
+}
+@media (max-width: 650px) {
+  .main {
+    padding: 28px 16px 48px;
+  }
+  .intro {
+    align-items: start;
+    flex-direction: column;
+    margin-bottom: 24px;
+    gap: 20px;
+  }
+  .intro > button {
+    width: 100%;
+  }
+  .access {
+    padding: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .access h2 {
+    font-size: 1.35rem;
+  }
+  .access p,
+  .access small {
+    font-size: 0.8rem;
+  }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .caption {
+    padding: 10px;
+    gap: 0;
+  }
+  .caption p {
+    font-size: 0.65rem;
+  }
+  .caption h2 {
+    font-size: 0.75rem;
+  }
+  .caption button {
+    padding: 4px;
+    min-width: 32px;
+  }
+  .dialog {
+    padding: 20px;
+  }
+  .modalHeading h2 {
+    font-size: 1.6rem;
+  }
+  .viewerActions button {
+    font-size: 0.75rem;
+    padding: 10px;
+  }
+  .notice,
+  .empty {
+    padding: 24px 16px;
+  }
+  .drop {
+    padding: 20px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main *,
+  .dialog * {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}

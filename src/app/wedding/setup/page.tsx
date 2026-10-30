@@ -2,7 +2,8 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { pageCouple } from "@/modules/wedding/page-actor.server";
 import { getWedding } from "@/modules/wedding/service.server";
-import { WeddingHeader, WeddingFooter, WeddingUnavailable } from "./shared";
+import { WeddingUnavailable } from "./shared";
+import { WeddingFrame } from "@/app/workspace/frame";
 import { SetupForm } from "./setup-form";
 import styles from "./setup.module.css";
 export const runtime = "nodejs";
@@ -22,11 +23,10 @@ export default async function WeddingSetupPage() {
     return <WeddingUnavailable />;
   }
   return (
-    <div className={styles.page}>
+    <WeddingFrame email={actor.account.email}>
       <a className="skip-link" href="#setup-content">
         Skip to wedding setup
       </a>
-      <WeddingHeader email={actor.account.email} />
       <main className={styles.main} id="setup-content">
         <div className={styles.intro}>
           <p className={styles.pill}>The wedding atelier · Your celebration</p>
@@ -74,7 +74,6 @@ export default async function WeddingSetupPage() {
           <SetupForm initial={wedding} />
         </div>
       </main>
-      <WeddingFooter />
-    </div>
+    </WeddingFrame>
   );
 }

@@ -42,6 +42,15 @@ export const guestInvitationSchema = z.object({
       name: z.string(),
       startsAt: z.string(),
       venue: z.string(),
+      invitation: z
+        .object({
+          id: z.string(),
+          status: z.enum(["pending", "attending", "notAttending"]),
+          attendingCount: z.number().int().min(0),
+          respondedAt: z.string().nullable(),
+          version: z.number().int().min(0),
+        })
+        .optional(),
     }),
   ),
 });

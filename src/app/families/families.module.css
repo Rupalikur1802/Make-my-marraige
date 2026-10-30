@@ -384,7 +384,7 @@
   border-radius: 12px;
   margin: 20px 0;
 }
-@media (max-width: 800px) {
+@media (max-width: 1300px) {
   .main {
     padding: 24px 20px 50px;
   }
@@ -463,4 +463,23 @@
   .nav {
     gap: 18px;
   }
+}
+
+.invitationTable th:nth-child(1) {
+  width: 17%;
+}
+.invitationTable th:nth-child(2) {
+  width: 20%;
+}
+.invitationTable th:nth-child(3) {
+  width: 16%;
+}
+.invitationTable th:nth-child(4) {
+  width: 15%;
+}
+.invitationTable th:nth-child(5) {
+  width: 17%;
+}
+.invitationTable th:nth-child(6) {
+  width: 15%;
 }

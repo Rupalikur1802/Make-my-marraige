@@ -691,7 +691,7 @@
   color: white;
   text-decoration: none;
 }
-@media (max-width: 1050px) {
+@media (max-width: 1300px) {
   .list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

@@ -12,9 +12,9 @@ export function FamilyRows({ families }: { families: FamilyList["families"] }) {
       <thead>
         <tr>
           <th scope="col">Family name</th>
-          <th scope="col">Invitation email</th>
+          <th scope="col">Contact email</th>
           <th scope="col">Invited members</th>
-          <th scope="col">Guest response</th>
+          <th scope="col">Ceremony attendance</th>
           <th scope="col">Assigned ceremonies</th>
           <th scope="col">Actions</th>
         </tr>
@@ -26,27 +26,31 @@ export function FamilyRows({ families }: { families: FamilyList["families"] }) {
               <strong>{f.name}</strong>
             </td>
             <td>
-              <span className={styles.mobileLabel}>Invitation email</span>
+              <span className={styles.mobileLabel}>Contact email</span>
               {f.email || "No email address saved"}
             </td>
             <td>
               <span className={styles.count}>{f.invitedCount} members</span>
             </td>
             <td>
-              <span className={styles.mobileLabel}>Guest response</span>
-              {f.invitationAcceptedAt ? (
-                <>
-                  <strong>Accepted</strong>
-                  <br />
-                  <time dateTime={f.invitationAcceptedAt}>
-                    {new Date(f.invitationAcceptedAt).toLocaleString("en-IN", {
-                      timeZone: "Asia/Kolkata",
-                    })}
-                  </time>
-                </>
-              ) : (
-                "Awaiting acceptance"
-              )}
+              <span className={styles.mobileLabel}>Ceremony attendance</span>
+              {f.assignedEvents.some((e) => e.status === "published")
+                ? f.assignedEvents
+                    .filter((e) => e.status === "published")
+                    .map((e) => (
+                      <p key={e.id}>
+                        <Link href={"/attendance?eventId=" + e.id}>
+                          {e.name}
+                        </Link>
+                        :{" "}
+                        {e.response === "attending"
+                          ? `Attending · ${e.attendingCount} members`
+                          : e.response === "notAttending"
+                            ? "Not attending"
+                            : "Pending"}
+                      </p>
+                    ))
+                : "No published ceremonies assigned"}
             </td>
             <td>
               <span className={styles.mobileLabel}>Assigned ceremonies</span>
@@ -68,9 +72,6 @@ export function FamilyRows({ families }: { families: FamilyList["families"] }) {
                   Edit family
                 </Link>
                 <DeleteFamily family={f} />
-                <Link href={"/families/" + f.id + "/invitation"}>
-                  Manage invitation
-                </Link>
               </div>
             </td>
           </tr>

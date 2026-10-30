@@ -190,6 +190,12 @@ export async function listFamilies(
             id: e._id.toString(),
             name: e.name,
             status: e.status,
+            response: rows.find(
+              (r) => r.familyId.equals(f._id) && r.eventId.equals(e._id),
+            )!.status,
+            attendingCount: rows.find(
+              (r) => r.familyId.equals(f._id) && r.eventId.equals(e._id),
+            )!.attendingCount,
           })),
       })),
       total,

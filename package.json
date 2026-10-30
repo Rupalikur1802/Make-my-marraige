@@ -22,10 +22,17 @@
     "test:wedding": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/wedding.test.ts",
     "test:events": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/events.test.ts",
     "test:families": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/families.test.ts",
-    "test:invitations": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/invitations.test.ts"
+    "test:invitations": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/invitations.test.ts",
+    "test:rsvp": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/rsvp.test.ts",
+    "test:expenses": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/expenses.test.ts",
+    "test:tasks": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/tasks.test.ts",
+    "test:dashboard": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/dashboard.test.ts",
+    "test:photos": "node --conditions=react-server --import tsx --test --test-concurrency=1 tests/photos.test.ts",
+    "photos:cleanup": "node --conditions=react-server --import tsx scripts/photos-cleanup.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.2",
+    "cloudinary": "2.11.0",
     "mongoose": "9.11.4",
     "next": "16.4.3",
     "react": "19.3.1",

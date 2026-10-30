@@ -103,6 +103,8 @@ export type FamilyList = {
       id: string;
       name: string;
       status: "draft" | "published";
+      response: "pending" | "attending" | "notAttending";
+      attendingCount: number;
     }[];
   })[];
   total: number;

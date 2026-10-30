@@ -279,3 +279,49 @@ At implementation verification, the saved local file still lacked email credenti
 Open Families, choose Manage invitation, enter the guest/family email and click Send invitation. The app saves the address, prepares the private invitation and submits one email. An existing lost link requires confirmation before replacement. Advanced manual link and preview controls are available under Invitation link and email details. A published assigned ceremony and configured server email delivery are still required.
 
 The guest opens the email link and clicks Accept invitation. Opening alone does not accept. The couple refreshes Families or the invitation status to see Accepted with a timestamp. This is one family acknowledgement; it does not submit ceremony attendance counts. Email-provider acceptance is separate from guest acceptance and does not guarantee inbox delivery.
+
+### Ceremony attendance (RSVP)
+
+Guests open their private invitation and respond independently to each published assigned ceremony. Choose Attending with a whole-number count within the family’s invited limit, or Not attending (zero). Save each response separately. Responses can be edited anytime; invitation acceptance remains a separate acknowledgement. On a stale response, explicitly load the latest saved response before editing again. Guests never need an account.
+
+Couples open /attendance from the wedding overview or family navigation, select a published ceremony and inspect confirmed guests plus attending, not-attending and pending family totals. Search and filters affect rows, while summary totals cover the whole selected ceremony. Family details show each response and its latest timestamp (IST). Refresh to retrieve changes; this version has no realtime updates or response deadlines.
+
+Run npm run test:rsvp for isolated RSVP validation, ownership, race and aggregation checks. npm run test:auth:http verifies the built application guest-save/couple-summary flow with disposable database data and email sending disabled. No new database indexes or configuration variables are needed for RSVP beyond the existing guest/auth/assignment setup.
+
+### Wedding dashboard
+
+After completing wedding setup, /workspace shows your saved wedding details and IST countdown, family/invited-member totals, unique families with pending published-ceremony responses, separate invitation acceptance, upcoming published ceremonies and attendance by ceremony. Refresh dashboard to retrieve new responses. Confirmed guests are per ceremony; they are never added into a cross-ceremony guest total. Empty data and temporary service failures have separate states.
+
+The dashboard, wedding details, ceremonies, families/invitation management and attendance use shared navigation and styling. Existing public/auth/guest pages keep their complementary visual direction. No additional environment variables or indexes are required. Tasks and expenses remain future milestones.
+
+Verify with npm run format:check, npm run lint, npm run typecheck, npm run build, npm run test:dashboard and npm run test:auth:http. Dashboard tests use disposable local MongoDB data with email disabled. Use the documented Node.js 24 runtime for release checks. See docs/implementation-plan.md for the exact milestone boundary and docs/project-status.md for verification status.
+
+### Guests and Invitation
+
+Guests (/families) contains contact/member details, ceremony assignments and per-ceremony attendance. Open its attendance link for response filtering. Invitation (/families?section=invitations) contains email sending status, separate family acceptance, literal search, status filters and pagination. Open Send / manage invitation to preview, copy the private link, send or retry through the existing workflow. Browsing or filtering never sends an email. Status reflects the latest prepared attempt, not delivery or the full send history; recipient email is the current saved contact. Refresh invitations to retrieve new acceptance/status changes.
+
+### Tasks and responsibilities
+
+Open Tasks to create, edit or delete responsibilities assigned to Groom, Bride or Family. Titles are required; notes, due date and ceremony are optional. Tasks can be Pending, In progress or Completed. Overdue is derived from the current IST calendar date; completed tasks never appear overdue. Search/filter controls change the rows, while summary cards cover all tasks. The dashboard shows incomplete tasks ordered by due date and links to their editing forms.
+
+After reviewing the intended database environment, install the new task indexes with npm run db:indexes. This operator command changes indexes; implementation does not run it against live data. Task creation requires the unique retry-key index. Run npm run test:tasks for disposable local MongoDB integration tests. Standard verification remains npm run format:check, npm run lint, npm run typecheck, npm run build and npm run test:auth:http. Creation retries reuse their UUID key while the task exists; after deleting a task, start a fresh creation. No email or notification is sent by task assignment.
+
+### Expenses and recorded spending
+
+Open Expenses to record money already paid. Enter a description, positive rupee amount (up to two decimals, no commas), date paid, Groom/Bride/Family payer and optional ceremony. Future payment dates are rejected using IST. Each shared purchase contribution is a separate entry. Search, payer/ceremony/date filters affect rows only; overview cards and ceremony breakdown cover the whole wedding. The dashboard shows total spending, payer contributions and the latest three payments.
+
+Amounts are stored as integer paise and summed exactly. Same-key creation retries do not duplicate payments while the record exists. Editing uses version checks; conflicts require Load latest. Deleting a record does not refund or reverse a payment. Deleting its ceremony preserves it as Wedding-wide. There are no budgets, estimates, unpaid balances, receipts, payment processing or exports.
+
+Use npm run db:indexes to install expense indexes in the intended mmm_dev/mmm_test environment; the operator refuses other database names. Production index installation needs a separately reviewed release process. Run npm run test:expenses for isolated integration tests, plus npm run format:check, npm run lint, npm run typecheck, npm run build and npm run test:auth:http. No new dependency or secret is needed beyond the existing server database/session configuration.
+
+### Photos and Cloudinary
+
+Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET and CLOUDINARY_PHOTO_PREFIX in ignored .env.local. Never expose the API secret through NEXT_PUBLIC_, logs or commits. The public cloud name/API key appear only where required for signed direct uploads. Empty examples are in .env.example. Use a stable unique mmm_dev_<id> or mmm_test_<id> namespace per isolated development/preview database; Vercel Production requires mmm_prod_<id>. Changing it after uploads hides earlier assets from that environment. Local credentials and namespace are configured; production configuration remains separate.
+
+Open Photos in the couple sidebar. Select up to ten JPEG/PNG/WebP photos (10 MiB each), upload, and retry unfinished items individually or as a batch. Photos appear after automatic validation; keep your original files separately because incoming images may be resized and metadata is removed. Guests use Open wedding photos from their invitation. One gallery is shared across the wedding. Only the couple can delete or change Allow guest photo access; disabling it preserves photos and couple access. No automatic date cutoff applies.
+
+No unsigned upload preset or public bucket is required. Authenticated originals/derivatives remain private, and browser image requests use authorized no-store app routes. Already viewed/downloaded bytes cannot be recalled. The app reserves 12 MiB per photo including previews, with 3 GiB per wedding and 6 GiB per namespace plus 20 new uploads per principal per 15 minutes. These limits do not guarantee free Cloudinary usage; transformations, bandwidth, other assets and Vercel media transfer also count. See docs/implementation-plan.md for direct-upload limits and privacy boundaries.
+
+Run npm run db:indexes explicitly for development database collections/indexes (already applied to the configured local development environment). Run npm run photos:cleanup regularly to remove expired incomplete/deleting/tombstoned uploads, at most 100 per run; repeat for additional batches. Ready photos are never automatically deleted. Cleanup waits two hours for upload credentials to expire. Production cleanup uses npm run photos:cleanup -- --production in a separately reviewed operator environment with externally supplied production variables; it does not load .env.local. Establish production index setup, isolated provider namespace, usage monitoring and cleanup operations before enabling guest uploads. No scheduler is provisioned.
+
+Verification commands: npm run test:photos, npm run format:check, npm run lint, npm run typecheck, npm run build, then npm run test:auth:http. Photos integration tests use disposable MongoDB data and provider mocks. No real invitation email is sent. See docs/project-status.md for confirmed results and pending review.

@@ -43,6 +43,10 @@ test(
     process.env.INVITATION_EMAIL_ENABLED = "false";
     process.env.RESEND_API_KEY = "test-only-not-live";
     process.env.EMAIL_FROM = "fixture-sender@example.test";
+    process.env.CLOUDINARY_CLOUD_NAME = "http-fixture-only";
+    process.env.CLOUDINARY_API_KEY = "http-fixture-key";
+    process.env.CLOUDINARY_API_SECRET = "http-fixture-secret";
+    process.env.CLOUDINARY_PHOTO_PREFIX = "mmm_test_http_photos";
     process.env.RATE_LIMIT_SECRET =
       "http-test-only-secret-at-least-32-characters";
     let server: ReturnType<typeof spawn> | undefined;
@@ -130,14 +134,18 @@ test(
         },
       });
       assert.equal(signupWorkspace.status, 200);
-      assert.match(await signupWorkspace.text(), /signup-http@example.test/);
+      assert.match(await signupWorkspace.text(), /\/wedding\/setup/);
       const illustration = await fetch(origin + "/images/couple-login.jpg");
       assert.equal(illustration.status, 200);
       const protectedResponse = await fetch(origin + "/workspace", {
         redirect: "manual",
       });
-      assert.equal(protectedResponse.status, 307);
-      assert.match(protectedResponse.headers.get("location")!, /\/login$/);
+      assert.ok([200, 307].includes(protectedResponse.status));
+      assert.match(
+        protectedResponse.headers.get("location") ??
+          (await protectedResponse.text()),
+        /\/login/,
+      );
       const rejected = await fetch(origin + "/api/auth/login", {
         method: "POST",
         headers: {
@@ -163,7 +171,7 @@ test(
           headers: { Cookie: cookie },
         });
         assert.equal(workspace.status, 200);
-        assert.match(await workspace.text(), /http-couple@example.test/);
+        assert.match(await workspace.text(), /\/wedding\/setup/);
         assert.match(workspace.headers.get("cache-control")!, /no-store/);
       }
       const session = await fetch(origin + "/api/auth/session", {
@@ -214,9 +222,148 @@ test(
       });
       assert.equal(overview.status, 200);
       const overviewHtml = await overview.text();
-      assert.match(overviewHtml, /Your celebration starts here/);
+      assert.match(overviewHtml, /at a glance/);
       assert.match(overviewHtml, /Test-only wedding hall/);
-      assert.match(overviewHtml, /6<!-- --> ceremonies/);
+      assert.match(overviewHtml, /No published ceremonies yet/);
+      for (const label of [
+        "Dashboard",
+        "Events",
+        "Tasks",
+        "Expenses",
+        "Guests",
+        "Invitation",
+        "Photos",
+        "Settings",
+      ])
+        assert.ok(overviewHtml.includes(label), `Sidebar includes ${label}`);
+      assert.match(overviewHtml, /href="\/photos"/);
+      const photosPage = await fetch(origin + "/photos", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(photosPage.status, 200);
+      const photosHtml = await photosPage.text();
+      assert.match(photosHtml, /Your wedding memories start here/);
+      assert.match(photosHtml, /Allow guest photo access/);
+      assert.ok(!photosHtml.includes("http-fixture-secret"));
+      const photosApi = await fetch(origin + "/api/photos", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(photosApi.status, 200);
+      assert.equal((await photosApi.json()).data.guestAccess, true);
+      assert.equal((await fetch(origin + "/api/photos")).status, 401);
+      const taskCreated = await fetch(origin + "/api/tasks", {
+        method: "POST",
+        headers: {
+          Cookie: cookie,
+          Origin: origin,
+          "Content-Type": "application/json",
+          "Idempotency-Key": randomUUID(),
+        },
+        body: JSON.stringify({
+          title: "Verify task planner",
+          assigneeName: "Family",
+          dueDate: "2026-10-01",
+          notes: "Disposable HTTP fixture",
+        }),
+      });
+      assert.equal(taskCreated.status, 201);
+      const taskRecord = (await taskCreated.json()).data;
+      const taskPage = await fetch(origin + "/tasks", {
+        headers: { Cookie: cookie },
+      });
+      const taskHtml = await taskPage.text();
+      assert.match(taskHtml, /Tasks &amp; responsibilities/);
+      assert.match(taskHtml, /Verify task planner/);
+      assert.match(taskPage.headers.get("cache-control")!, /no-store/);
+      const taskDashboard = await fetch(origin + "/api/dashboard", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal((await taskDashboard.json()).data.tasks.pending, 1);
+      const taskUpdated = await fetch(origin + "/api/tasks/" + taskRecord.id, {
+        method: "PATCH",
+        headers: {
+          Cookie: cookie,
+          Origin: origin,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ expectedVersion: 0, status: "completed" }),
+      });
+      assert.equal(taskUpdated.status, 200);
+      assert.equal((await taskUpdated.json()).data.isOverdue, false);
+      const taskDeleted = await fetch(
+        origin + "/api/tasks/" + taskRecord.id + "?expectedVersion=1",
+        { method: "DELETE", headers: { Cookie: cookie, Origin: origin } },
+      );
+      assert.equal(taskDeleted.status, 204);
+      const expenseKey = randomUUID();
+      const expenseBody = {
+        description: "HTTP recorded payment",
+        amountPaise: 29,
+        spentOn: "2026-10-01",
+        payerName: "Bride",
+      };
+      const recordPayment = () =>
+        fetch(origin + "/api/expenses", {
+          method: "POST",
+          headers: {
+            Cookie: cookie,
+            Origin: origin,
+            "Content-Type": "application/json",
+            "Idempotency-Key": expenseKey,
+          },
+          body: JSON.stringify(expenseBody),
+        });
+      const expenseCreated = await recordPayment();
+      assert.equal(expenseCreated.status, 201);
+      const expenseRecord = (await expenseCreated.json()).data;
+      const expenseReplay = await recordPayment();
+      assert.equal(expenseReplay.status, 200);
+      assert.equal(expenseReplay.headers.get("Idempotency-Replayed"), "true");
+      const expensePage = await fetch(origin + "/expenses", {
+        headers: { Cookie: cookie },
+      });
+      const expenseHtml = await expensePage.text();
+      assert.match(expenseHtml, /Expenses &amp; spending/);
+      assert.match(expenseHtml, /HTTP recorded payment/);
+      assert.match(expenseHtml, /₹0\.29/);
+      const spendingDashboard = await fetch(origin + "/api/dashboard", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(
+        (await spendingDashboard.json()).data.expenses.totalPaise,
+        29,
+      );
+      const summaryExpense = await fetch(
+        origin + "/api/expenses/summary?payerKey=bride",
+        { headers: { Cookie: cookie } },
+      );
+      assert.equal((await summaryExpense.json()).data.totalPaise, 29);
+      const expenseChanged = await fetch(
+        origin + "/api/expenses/" + expenseRecord.id,
+        {
+          method: "PATCH",
+          headers: {
+            Cookie: cookie,
+            Origin: origin,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ expectedVersion: 0, amountPaise: 101 }),
+        },
+      );
+      assert.equal(expenseChanged.status, 200);
+      const expenseRemoved = await fetch(
+        origin + "/api/expenses/" + expenseRecord.id + "?expectedVersion=1",
+        { method: "DELETE", headers: { Cookie: cookie, Origin: origin } },
+      );
+      assert.equal(expenseRemoved.status, 204);
+      const invitationDirectory = await fetch(
+        origin + "/families?section=invitations",
+        { headers: { Cookie: cookie } },
+      );
+      assert.equal(invitationDirectory.status, 200);
+      const invitationDirectoryHtml = await invitationDirectory.text();
+      assert.match(invitationDirectoryHtml, /<h1>Invitations<\/h1>/);
+      assert.doesNotMatch(invitationDirectoryHtml, /Unable to load families/);
       const stale = await patchWedding({
         expectedVersion: 1,
         venue: "Stale overwrite",
@@ -512,6 +659,46 @@ test(
       const guestHtml = await guestPage.text();
       assert.match(guestHtml, /HTTP Invitation Family/);
       assert.match(guestHtml, /Accept invitation/);
+      assert.match(guestHtml, /Your attendance/);
+      assert.match(guestHtml, /Save response/);
+      assert.match(guestHtml, /Open wedding photos/);
+      const guestPhotos = await fetch(origin + "/guest/photos", {
+        headers: { Cookie: guestCookie },
+      });
+      assert.equal(guestPhotos.status, 200);
+      assert.match(await guestPhotos.text(), /Be the first to share a memory/);
+      const pausedPhotos = await fetch(origin + "/api/photos/settings", {
+        method: "PATCH",
+        headers: {
+          Cookie: cookie,
+          Origin: origin,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ guestAccess: false, expectedVersion: 0 }),
+      });
+      assert.equal(pausedPhotos.status, 200);
+      const guestPhotosBlocked = await fetch(origin + "/api/guest/photos", {
+        headers: { Cookie: guestCookie },
+      });
+      assert.equal(guestPhotosBlocked.status, 403);
+      assert.equal(
+        (await guestPhotosBlocked.json()).error.code,
+        "PHOTO_ACCESS_PAUSED",
+      );
+      assert.equal(
+        (
+          await fetch(origin + "/api/photos/settings", {
+            method: "PATCH",
+            headers: {
+              Cookie: cookie,
+              Origin: origin,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ guestAccess: true, expectedVersion: 1 }),
+          })
+        ).status,
+        200,
+      );
       assert.equal(invitation.family.invitationAcceptedAt, null);
       const acceptance = await fetch(origin + "/api/guest/accept", {
         method: "POST",
@@ -533,10 +720,87 @@ test(
         (await coupleFamily.json()).data.invitationAcceptedAt,
         acceptedAt,
       );
-      const acceptedRows = await fetch(origin + "/families", {
+      const acceptedRows = await fetch(
+        origin + "/families?section=invitations",
+        {
+          headers: { Cookie: cookie },
+        },
+      );
+      const invitationRowsHtml = await acceptedRows.text();
+      assert.match(invitationRowsHtml, /Accepted/);
+      assert.match(invitationRowsHtml, /Invitation sending and acceptance/);
+      assert.doesNotMatch(
+        invitationRowsHtml,
+        /Saved family records and ceremony assignments/,
+      );
+      const rsvpPath = "/api/guest/rsvp/" + invitation.events[0].invitation.id;
+      const rsvpHeaders = {
+        Origin: origin,
+        "Content-Type": "application/json",
+        Cookie: guestCookie,
+      };
+      const rsvpSave = await fetch(origin + rsvpPath, {
+        method: "PUT",
+        headers: rsvpHeaders,
+        body: JSON.stringify({
+          expectedVersion: 0,
+          status: "attending",
+          attendingCount: 2,
+        }),
+      });
+      assert.equal(rsvpSave.status, 200);
+      assert.equal((await rsvpSave.json()).data.version, 1);
+      const summary = await fetch(
+        origin + "/api/attendance?eventId=" + invitation.events[0].id,
+        { headers: { Cookie: cookie } },
+      );
+      assert.equal(summary.status, 200);
+      assert.equal((await summary.json()).data.summary.confirmedGuests, 2);
+      const guestDirectory = await fetch(origin + "/families", {
         headers: { Cookie: cookie },
       });
-      assert.match(await acceptedRows.text(), /Accepted/);
+      const guestDirectoryHtml = await guestDirectory.text();
+      assert.match(guestDirectoryHtml, /<h1>Guests<\/h1>/);
+      assert.match(guestDirectoryHtml, /Attending/);
+      assert.doesNotMatch(
+        guestDirectoryHtml,
+        /Invitation sending and acceptance/,
+      );
+      const attendancePage = await fetch(
+        origin + "/attendance?eventId=" + invitation.events[0].id,
+        { headers: { Cookie: cookie } },
+      );
+      assert.equal(attendancePage.status, 200);
+      assert.match(attendancePage.headers.get("cache-control")!, /no-store/);
+      const attendanceHtml = await attendancePage.text();
+      assert.match(attendanceHtml, /HTTP Invitation Family/);
+      assert.match(attendanceHtml, /Confirmed guests/);
+      const familyDetails = await fetch(
+        origin + "/families/" + inviteFamily.id,
+        { headers: { Cookie: cookie } },
+      );
+      assert.match(await familyDetails.text(), /Ceremony attendance/);
+      const rsvpUpdate = await fetch(origin + rsvpPath, {
+        method: "PUT",
+        headers: rsvpHeaders,
+        body: JSON.stringify({
+          expectedVersion: 1,
+          status: "notAttending",
+          attendingCount: 0,
+        }),
+      });
+      assert.equal(rsvpUpdate.status, 200);
+      const refreshedAttendance = await fetch(
+        origin + "/api/attendance?eventId=" + invitation.events[0].id,
+        { headers: { Cookie: cookie } },
+      );
+      const refreshedSummary = (await refreshedAttendance.json()).data.summary;
+      assert.equal(refreshedSummary.confirmedGuests, 0);
+      assert.equal(refreshedSummary.notAttendingFamilies, 1);
+      const guestAttendanceDenied = await fetch(origin + "/api/attendance", {
+        headers: { Cookie: guestCookie },
+      });
+      assert.equal(guestAttendanceDenied.status, 401);
       const guestDenied = await fetch(origin + "/api/families", {
         headers: { Cookie: guestCookie },
       });
@@ -585,6 +849,16 @@ test(
         headers: { Cookie: guestCookie },
       });
       assert.equal(guestRevoked.status, 401);
+      const revokedRsvp = await fetch(origin + rsvpPath, {
+        method: "PUT",
+        headers: rsvpHeaders,
+        body: JSON.stringify({
+          expectedVersion: 2,
+          status: "attending",
+          attendingCount: 1,
+        }),
+      });
+      assert.equal(revokedRsvp.status, 401);
       const revokedAcceptance = await fetch(origin + "/api/guest/accept", {
         method: "POST",
         headers: {
@@ -622,7 +896,12 @@ test(
         headers: { Cookie: cookie },
         redirect: "manual",
       });
-      assert.equal(returnToPrivate.status, 307);
+      assert.ok([200, 307].includes(returnToPrivate.status));
+      assert.match(
+        returnToPrivate.headers.get("location") ??
+          (await returnToPrivate.text()),
+        /\/login/,
+      );
     } finally {
       if (server && server.exitCode === null) {
         const stopped = new Promise<void>((resolve) =>

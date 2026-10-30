@@ -4,14 +4,11 @@ import type { Metadata } from "next";
 import { pageCouple } from "@/modules/wedding/page-actor.server";
 import { getWedding } from "@/modules/wedding/service.server";
 import { listCeremonies } from "@/modules/events/service.server";
-import {
-  WeddingHeader,
-  WeddingFooter,
-  WeddingUnavailable,
-} from "@/app/wedding/setup/shared";
+import { WeddingUnavailable } from "@/app/wedding/setup/shared";
 import { CeremonyList } from "./ceremony-list";
 import { RetryCeremonies } from "./retry";
 import styles from "./ceremonies.module.css";
+import { WeddingFrame } from "@/app/workspace/frame";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -40,14 +37,13 @@ export default async function CeremoniesPage({
     events = null;
   }
   return (
-    <div className={styles.page}>
+    <WeddingFrame email={actor.account.email}>
       <a className="skip-link" href="#ceremonies-content">
         Skip to ceremonies
       </a>
-      <WeddingHeader email={actor.account.email} />
       <main className={styles.main} id="ceremonies-content">
         <Link className={styles.back} href="/workspace">
-          ← Back to wedding overview
+          ← Back to dashboard
         </Link>
         <p className={styles.couple}>
           {wedding.groomName} &amp; {wedding.brideName}
@@ -73,7 +69,6 @@ export default async function CeremoniesPage({
           </div>
         )}
       </main>
-      <WeddingFooter />
-    </div>
+    </WeddingFrame>
   );
 }

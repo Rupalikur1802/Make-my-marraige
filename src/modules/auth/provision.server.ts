@@ -1,4 +1,7 @@
 import "server-only";
+import { photoModels } from "@/modules/photos/model.server";
+import { expenseModel } from "@/modules/expenses/model.server";
+import { taskModel } from "@/modules/tasks/model.server";
 import { invitationModels } from "@/modules/invitations/model.server";
 import { familyModels } from "@/modules/families/model.server";
 import { eventModel } from "@/modules/events/model.server";
@@ -14,12 +17,19 @@ export async function ensureAuthIndexes() {
   const connection = await connectDatabase();
   const { Account, Session, RateLimit } = authModels(connection);
   const Wedding = weddingModel(connection);
+  // Gallery/usage collections have only their implicit _id index. Explicitly
+  // create these collections; createIndexes alone has no work for them.
+  for (const photoModel of Object.values(photoModels(connection)))
+    await photoModel.createCollection();
   for (const model of [
     Account,
     Wedding,
     Session,
     RateLimit,
+    ...Object.values(photoModels(connection)),
     eventModel(connection),
+    taskModel(connection),
+    expenseModel(connection),
     familyModels(connection).Family,
     familyModels(connection).Invitation,
     invitationModels(connection).GuestSession,

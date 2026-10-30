@@ -11,6 +11,7 @@ import { ceremonyTiming, type EventDTO } from "@/modules/events/validation";
 import { Confirm } from "./confirm";
 import { DeleteFamily } from "./delete-family";
 import styles from "./families.module.css";
+import { responseLabel, responseTime } from "@/modules/rsvp/validation";
 function valuesOf(f?: FamilyDetail) {
   return {
     name: f?.name ?? "",
@@ -418,6 +419,49 @@ export function FamilyEditor({
               Manage invitation link and email →
             </Link>
           </p>
+        </section>
+      )}
+      {saved && (
+        <section className={styles.panel}>
+          <h2>Ceremony attendance</h2>
+          <button
+            type="button"
+            className={styles.secondary}
+            disabled={blocked}
+            onClick={() => (dirty ? setConfirm("reload") : void reload())}
+          >
+            Refresh responses
+          </button>
+          <p>
+            Invitation{" "}
+            {saved.invitationAcceptedAt
+              ? "accepted on " + responseTime(saved.invitationAcceptedAt)
+              : "awaiting acceptance"}
+            . This acknowledgement is separate from ceremony responses.
+          </p>
+          {saved.eventAssignments.length ? (
+            <ul>
+              {saved.eventAssignments.map((row) => (
+                <li key={row.invitationId} style={{ marginBottom: 18 }}>
+                  <strong>{row.eventName}</strong> · {row.eventStatus}
+                  <p>
+                    {responseLabel(row.status)} ·{" "}
+                    {row.status === "pending"
+                      ? "No count confirmed"
+                      : `${row.attendingCount} of ${saved.invitedCount} members attending`}
+                  </p>
+                  <small>{responseTime(row.respondedAt)}</small>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No ceremonies assigned.</p>
+          )}
+          <p>
+            Guests can change their responses anytime through their invitation
+            link.
+          </p>
+          <Link href="/attendance">View attendance summary</Link>
         </section>
       )}
       {saved && (

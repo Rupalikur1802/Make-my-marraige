@@ -1,0 +1,316 @@
+.frame {
+  min-height: 100svh;
+  background: #f7f5ef;
+  color: #252924;
+}
+.sidebar {
+  overflow-y: auto;
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 232px;
+  padding: 30px 20px;
+  border-right: 1px solid #e4e0d5;
+  background: linear-gradient(160deg, #fcfaf5, #f2eee4);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.brand > span {
+  font:
+    400 1.16rem/1.08 var(--font-serif),
+    Georgia,
+    serif;
+}
+.brand small {
+  display: block;
+  margin-top: 7px;
+  font:
+    400 0.58rem/1.4 var(--font-sans),
+    Arial,
+    sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #877455;
+}
+.sideHeading {
+  margin: 42px 12px 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #867654;
+  font-size: 0.62rem;
+}
+.sidebar nav,
+.mobileMenu nav {
+  display: grid;
+  gap: 6px;
+}
+.sidebar nav a,
+.mobileMenu nav a {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  padding: 14px 13px;
+  min-height: 48px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  color: #59604f;
+}
+.sidebar nav a span,
+.mobileMenu nav a span {
+  width: 20px;
+  font-size: 1.15rem;
+  text-align: center;
+}
+.sidebar nav a[aria-current="page"],
+.mobileMenu nav a[aria-current="page"] {
+  background: #465344;
+  color: white;
+  box-shadow: 0 4px 12px #26392512;
+}
+.sidebar nav a:hover,
+.mobileMenu nav a:hover {
+  background: #e8e7dd;
+  color: #293725;
+}
+.sideNote {
+  margin-top: auto;
+  padding: 24px 12px 0;
+  font-size: 0.7rem;
+  line-height: 1.8;
+  color: #7c735e;
+}
+.sideNote a {
+  display: block;
+  margin-top: 14px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.body {
+  margin-left: 232px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+.header {
+  min-height: 88px;
+  padding: 20px clamp(20px, 3vw, 48px);
+  background: #fcfaf5;
+  border-bottom: 1px solid #e4e0d5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+.breadcrumb {
+  display: grid;
+  gap: 7px;
+}
+.breadcrumb span {
+  text-transform: uppercase;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: #877455;
+}
+.breadcrumb strong {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.account > span {
+  color: #82765e;
+  font-size: 0.62rem;
+  line-height: 1.6;
+  max-width: 250px;
+  overflow-wrap: anywhere;
+}
+.account strong {
+  display: block;
+  font-weight: 500;
+  font-size: 0.73rem;
+  color: #465344;
+}
+.account button {
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.content {
+  flex: 1;
+  min-width: 0;
+}
+.content > main {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 36px clamp(20px, 3vw, 48px) 64px;
+  flex: 1;
+  min-width: 0;
+}
+.footer {
+  padding: 28px clamp(20px, 3vw, 48px);
+  border-top: 1px solid #e4e0d5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  color: #7d725c;
+  font-size: 0.72rem;
+}
+.footer > span {
+  font:
+    400 1.2rem var(--font-serif),
+    Georgia,
+    serif;
+  color: #465344;
+}
+.mobileMenu,
+.mobileBrand {
+  display: none;
+}
+.frame :is(a, button, summary):focus-visible {
+  outline: 3px solid #a28c69;
+  outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .sidebar,
+  .breadcrumb {
+    display: none;
+  }
+  .body {
+    margin-left: 0;
+  }
+  .header {
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .mobileBrand {
+    display: block;
+  }
+  .mobileMenu {
+    display: block;
+    width: 100%;
+    border-top: 1px solid #e7e2d7;
+    padding-top: 12px;
+  }
+  .mobileMenu summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: list-item;
+    padding: 12px 4px;
+    color: #465344;
+    font-size: 0.85rem;
+  }
+  .mobileMenu nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 8px;
+  }
+  .account {
+    gap: 16px;
+  }
+  .account > span {
+    max-width: 180px;
+  }
+}
+@media (max-width: 550px) {
+  .header {
+    padding: 18px 20px;
+  }
+  .account {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .account > span {
+    max-width: 65%;
+  }
+  .footer {
+    flex-direction: column;
+    align-items: start;
+  }
+}
+
+/* Shared atelier shell aligned with the approved Stitch dashboard. */
+.frame {
+  background: #faf8f5;
+  color: #212520;
+}
+.sidebar {
+  background: linear-gradient(180deg, #faf7f2, #f1ece0);
+  border-color: #e5decd;
+}
+.weddingContext {
+  display: grid;
+  gap: 10px;
+  margin-top: 26px;
+  padding: 18px 14px;
+  background: #fffdfa;
+  border: 1px solid #ded4c0;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px #a28c6910;
+}
+.weddingContext strong {
+  font:
+    400 1.5rem/1.2 var(--font-serif),
+    Georgia,
+    serif;
+  overflow-wrap: anywhere;
+}
+.weddingContext em {
+  color: #a28c69;
+}
+.weddingContext span {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: #5f6359;
+  overflow-wrap: anywhere;
+}
+.sidebar nav a[aria-current="page"] {
+  background: #313c2f;
+  color: #fff;
+  border-left: 3px solid #cbb89a;
+}
+.sidebar nav a[aria-current="page"]:hover {
+  background: #313c2f;
+  color: #fff;
+}
+.header {
+  background: #faf8f5;
+  border-color: #e7dfce;
+}
+.sideHeading {
+  margin-top: 26px;
+}
+
+.comingSoon {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  padding: 14px 13px;
+  min-height: 48px;
+  font-size: 0.86rem;
+  color: #827d70;
+  border-radius: 8px;
+}
+.comingSoon svg {
+  flex-shrink: 0;
+}
+.comingSoon small {
+  margin-left: auto;
+  font-size: 0.58rem;
+  line-height: 1.4;
+  max-width: 45px;
+  color: #827d70;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

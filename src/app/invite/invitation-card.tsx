@@ -3,8 +3,10 @@ import { ceremonyTiming } from "@/modules/events/validation";
 import styles from "./invitation.module.css";
 export function InvitationCard({
   invitation,
+  showCeremonies = true,
 }: {
   invitation: GuestInvitation;
+  showCeremonies?: boolean;
 }) {
   const { wedding, family, events } = invitation;
   return (
@@ -26,22 +28,26 @@ export function InvitationCard({
           {family.invitedCount === 1 ? "member" : "members"}
         </p>
       </div>
-      <h2>Your ceremonies</h2>
-      {events.length ? (
-        <ul className={styles.events}>
-          {events.map((e) => (
-            <li key={e.id} className={styles.event}>
-              <h3>{e.name}</h3>
-              <p>{ceremonyTiming(e.startsAt)}</p>
-              <p>{e.venue}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>
-          No ceremonies are currently available. Please contact the couple for
-          an update.
-        </p>
+      {showCeremonies && (
+        <>
+          <h2>Your ceremonies</h2>
+          {events.length ? (
+            <ul className={styles.events}>
+              {events.map((e) => (
+                <li key={e.id} className={styles.event}>
+                  <h3>{e.name}</h3>
+                  <p>{ceremonyTiming(e.startsAt)}</p>
+                  <p>{e.venue}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>
+              No ceremonies are currently available. Please contact the couple
+              for an update.
+            </p>
+          )}
+        </>
       )}
       <p className={styles.notice}>
         This invitation link is private to your family. Keep it with the
